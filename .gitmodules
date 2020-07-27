@@ -1,0 +1,3 @@
+[submodule "cloudformation/cluster"]
+	path = cloudformation/cluster
+	url = git@github.com:josephbmanley/aws-cluster-stack.git

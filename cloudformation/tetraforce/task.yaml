@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: TetraForce ECS Task
+Parameters:
+  LogGroupName:
+    Type: String
+    Description: The AWS CloudWatch log group to output logs to.
+    Default: "/ecs/tetraforce"
+
+  environment:
+    Type: String
+    Description: Name of the environment to use in naming.
+    Default: production
+
+  DockerTag:
+    Description: Tag in DockerHub to deploy
+    Type: String
+    Default: "latest"
+
+Resources:
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7
+      LogGroupName: !Sub "${LogGroupName}/${environment}"
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      - Name: game_server
+        Essential: 'true'
+        Image: !Sub "nginx:${DockerTag}"
+        MemoryReservation: 250
+        PortMappings:
+        - HostPort: 80
+          ContainerPort: 80
+          Protocol: tcp
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-group:
+              Ref: LogGroup
+Outputs:
+  TaskArn:
+    Description: ARN of the TaskDefinition
+    Value: !Ref TaskDefinition

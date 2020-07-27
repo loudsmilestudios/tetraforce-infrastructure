@@ -1,0 +1,59 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: TetraForce ECS Infrastructure
+Parameters:
+  #------------------------
+  # Deployment Information
+  #------------------------
+  environment:
+    Type: String
+    Description: Name of the environment to use in naming.
+    Default: production
+  release:
+    Type: String
+    Description: Name of the release name of the stack version to use.
+    Default: production
+    AllowedValues: ['develop', 'stage', 'production']
+    ConstraintDescription: "Must be a possible release version."
+  DeploymentBucket:
+    Default: tetraforce-deployment-bucket
+    Description: S3 Bucket used in CloudFormation deployment
+    Type: String
+
+  #------------
+  # Networking
+  #------------
+  VpcId:
+    Description: ID of the VPC
+    Type: AWS::EC2::VPC::Id
+  PublicSubnets:
+    Description: The public subnets for the ALB to run in. (Space seperated)
+    Type: String
+
+  #------------
+  # CloudWatch
+  #------------
+  LogGroup:
+    Type: String
+    Description: The AWS CloudWatch log group to output logs to.
+    Default: "/ecs/tetraforce"
+
+Resources:
+  EcsCluster:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${DeploymentBucket}/${release}/cloudformation/cluster/top.yaml'
+      Parameters:
+        Environment: !Ref environment
+        VpcId: !Ref VpcId
+        SubnetIds: !Join [",", !Split [" ", !Ref PublicSubnets]]
+        Project: "TetraForce"
+
+  TaskDefinition:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${DeploymentBucket}/${release}/cloudformation/tetraforce/task.yaml'
+      Parameters:
+        environment: !Ref environment
+        LogGroupName: !Ref LogGroup
+        DockerTag: "latest"
