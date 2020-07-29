@@ -37,7 +37,7 @@ jobs:
         name: tetraforce-stage
         template: cloudformation/tetraforce/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
-        parameter-overrides: VpcId=${{ secrets.VPC_ID }},environment=stage,release=stage,PublicSubnets=${{ secrets.SUBNET_IDS }},AsgDesiredCapacity=1,GitHubTokenSecret=${{ secrets.SECRET_ARN }}
+        parameter-overrides: VpcId=${{ secrets.VPC_ID }},DockerTag=stage,environment=stage,release=stage,PublicSubnets=${{ secrets.SUBNET_IDS }},AsgDesiredCapacity=1,GitHubTokenSecret=${{ secrets.SECRET_ARN }}
   iam:
     runs-on: ubuntu-latest
     steps:
