@@ -35,7 +35,7 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      TaskRoleArn: !Ref TaskExecutionRole
+      ExecutionRoleArn: !Ref TaskExecutionRole
       ContainerDefinitions:
       - Name: game_server
         Essential: 'true'
