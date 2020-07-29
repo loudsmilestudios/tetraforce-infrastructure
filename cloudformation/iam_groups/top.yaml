@@ -75,5 +75,8 @@ Resources:
           - Sid: PassRoleToEcs
             Action:
               - iam:PassRole
+              - iam:Get*
+              - iam:List*
+              - iam:Describe*
             Effect: Allow
             Resource: arn:aws:iam::942134138525:role/TetraForce*
