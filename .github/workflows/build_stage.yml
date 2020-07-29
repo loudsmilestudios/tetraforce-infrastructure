@@ -37,4 +37,4 @@ jobs:
         name: tetraforce-stage
         template: cloudformation/tetraforce/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
-        parameter-overrides: VpcId=${{ secrets.VPC_ID }},environment=stage,DockerTag=stage,release=stage,PublicSubnets=${{ secrets.SUBNET_IDS }}
+        parameter-overrides: VpcId=${{ secrets.VPC_ID }},environment=stage,release=stage,PublicSubnets=${{ secrets.SUBNET_IDS }}
