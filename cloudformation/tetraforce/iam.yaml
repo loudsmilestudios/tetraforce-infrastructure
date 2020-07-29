@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: TetraForce ECS Infrastructure
+Parameters:
+  #------------------------
+  # Deployment Information
+  #------------------------
+  environment:
+    Type: String
+    Description: Name of the environment to use in naming.
+    Default: production
+  
+  DockerRepoSecret:
+    Description: Arn of secret in AWS Secrets Manager holding Docker repo credentials
+    Type: String
+
+Resources:
+  EcsExecutionerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ecs-tasks.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      RoleName: !Sub 'TetraForce-TaskExecutioner-${environment}'
+  EcsExecutionPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AllowGettingSecrets
+      Roles:
+        - !Ref EcsExecutionerRole
+      PolicyDocument:
+        Statement:
+          - Sid: ReadDockerSecret
+            Action:
+              - secretsmanager:Describe*
+              - secretsmanager:Get*
+              - secretsmanager:List*
+            Effect: Allow
+            Resource: !Ref DockerRepoSecret
+
+Outputs:
+  EcsExecutioner:
+    Description: IAM Role used by ECS Tasks
+    Value: !GetAtt EcsExecutionerRole.Arn

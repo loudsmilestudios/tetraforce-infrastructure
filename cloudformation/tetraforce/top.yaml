@@ -46,6 +46,15 @@ Parameters:
     Default: "/ecs/tetraforce"
 
 Resources:
+
+  IAM:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${DeploymentBucket}/${release}/cloudformation/tetraforce/iam.yaml'
+      Parameters:
+        environment: !Ref environment
+        DockerRepoSecret: !Ref GitHubTokenSecret
+
   EcsCluster:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -65,3 +74,4 @@ Resources:
         LogGroupName: !Ref LogGroup
         DockerTag: !Ref DockerTag
         DockerRepoSecret: !Ref GitHubTokenSecret
+        TaskExecutionRole: !GetAtt IAM.Outputs.EcsExecutioner

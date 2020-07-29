@@ -19,6 +19,10 @@ Parameters:
   DockerRepoSecret:
     Description: Arn of secret in AWS Secrets Manager holding Docker repo credentials
     Type: String
+  
+  TaskExecutionRole:
+    Description: IAM Role used by ECS Tasks
+    Type: String
 
 Resources:
 
@@ -31,6 +35,7 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
+      TaskRoleArn: !Ref TaskExecutionRole
       ContainerDefinitions:
       - Name: game_server
         Essential: 'true'
