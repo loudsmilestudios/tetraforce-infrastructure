@@ -27,6 +27,8 @@ Resources:
           Action:
           - sts:AssumeRole
       RoleName: !Sub 'TetraForce-TaskExecutioner-${environment}'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
   EcsExecutionPolicy:
     Type: AWS::IAM::Policy
     Properties:
