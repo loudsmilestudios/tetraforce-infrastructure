@@ -19,6 +19,13 @@ Parameters:
     Default: tetraforce-deployment-bucket
     Description: S3 Bucket used in CloudFormation deployment
     Type: String
+  DockerTag:
+    Description: Tag in DockerHub to deploy
+    Type: String
+    Default: "latest"
+  GitHubTokenSecret:
+    Description: Arn of secret in AWS Secrets Manager holding GitHub credentials
+    Type: String
 
   #------------
   # Networking
@@ -56,4 +63,5 @@ Resources:
       Parameters:
         environment: !Ref environment
         LogGroupName: !Ref LogGroup
-        DockerTag: "latest"
+        DockerTag: !Ref DockerTag
+        DockerRepoSecret: !Ref GitHubTokenSecret

@@ -16,6 +16,10 @@ Parameters:
     Type: String
     Default: "latest"
 
+  DockerRepoSecret:
+    Description: Arn of secret in AWS Secrets Manager holding Docker repo credentials
+    Type: String
+
 Resources:
 
   LogGroup:
@@ -30,10 +34,12 @@ Resources:
       ContainerDefinitions:
       - Name: game_server
         Essential: 'true'
-        Image: !Sub "nginx:${DockerTag}"
+        Image: !Sub "docker.pkg.github.com/fornclake/tetraforce/tetraforce:${DockerTag}"
+        RepositoryCredentials:
+          CredentialsParameter: !Ref DockerRepoSecret
         MemoryReservation: 250
         PortMappings:
-        - HostPort: 80
+        - HostPort: 0
           ContainerPort: 80
           Protocol: tcp
         LogConfiguration:
