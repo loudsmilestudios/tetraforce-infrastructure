@@ -36,6 +36,7 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ExecutionRoleArn: !Ref TaskExecutionRole
+      Family: !Sub "TetraForce-${environment}"
       ContainerDefinitions:
       - Name: game_server
         Essential: 'true'
