@@ -19,6 +19,9 @@ Parameters:
     Default: tetraforce-deployment-bucket
     Description: S3 Bucket used in CloudFormation deployment
     Type: String
+  AsgDesiredCapacity:
+    Type: Number
+    Default: 1
   DockerTag:
     Description: Tag in DockerHub to deploy
     Type: String
@@ -64,6 +67,7 @@ Resources:
         VpcId: !Ref VpcId
         SubnetIds: !Join [",", !Split [" ", !Ref PublicSubnets]]
         Project: "TetraForce"
+        AsgDesiredCapacity: !Ref AsgDesiredCapacity
 
   TaskDefinition:
     Type: AWS::CloudFormation::Stack
