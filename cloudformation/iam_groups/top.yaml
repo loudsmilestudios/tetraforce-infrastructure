@@ -1,0 +1,79 @@
+
+Resources:
+  ProjectReadAccessGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: TetraForceReadAccessUser
+
+  ProjectAdminGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: TetraForceAdmin
+
+  InfrastructureAdminGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: InfrastructureAdmin
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  TetraForceReadAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Groups:
+        - !Ref ProjectReadAccessGroup
+        - !Ref ProjectAdminGroup
+      PolicyName: TetraForceReadAccess
+      PolicyDocument:
+        Statement:
+          - Sid: ReadCloudWatchLogs
+            Action:
+              - logs:Describe*
+              - logs:Get*
+              - logs:List*
+              - logs:StartQuery
+              - logs:StopQuery
+              - logs:FilterLogEvents
+            Effect: Allow
+            Resource: "*"
+          - Sid: ReadCloudWatch
+            Action:
+              - cloudwatch:Get*
+              - cloudwatch:List*
+              - cloudwatch:Describe*
+            Effect: Allow
+            Resource: "*"
+          - Sid: ReadEcs
+            Action:
+              - ecs:Describe*
+              - ecs:Get*
+              - ecs:List*
+            Effect: Allow
+            Resource: "*"
+
+  TetraForceAdminPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Groups:
+        - !Ref ProjectAdminGroup
+      PolicyName: TetraForceAdminAccess
+      PolicyDocument:
+        Statement:
+          - Sid: ManageEcsTasks
+            Action:
+              - ecs:RunTask
+              - ecs:StartTask
+              - ecs:StopTask
+              - ecs:Update*
+              - logs:PutLogEvents
+              - logs:FilterLogEvents
+              - iam:ListRoles
+              - health:DescribeEventAggregates
+            Effect: Allow
+            Resource: "*"
+
+          - Sid: PassRoleToEcs
+            Action:
+              - iam:PassRole
+            Effect: Allow
+            Resource: arn:aws:iam::942134138525:role/TetraForce*

@@ -38,3 +38,20 @@ jobs:
         template: cloudformation/tetraforce/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
         parameter-overrides: VpcId=${{ secrets.VPC_ID }},environment=stage,release=stage,PublicSubnets=${{ secrets.SUBNET_IDS }},AsgDesiredCapacity=1,GitHubTokenSecret=${{ secrets.SECRET_ARN }}
+  iam:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2.1.0
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
+    - name: Deploy to AWS CloudFormation
+      uses: aws-actions/aws-cloudformation-github-deploy@v1
+      with:
+        name: tetraforce-iam
+        template: cloudformation/iam_groups/top.yaml
+        capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
