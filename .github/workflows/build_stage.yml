@@ -55,3 +55,4 @@ jobs:
         name: tetraforce-iam
         template: cloudformation/iam_groups/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
+        no-fail-on-empty-changeset: "1"
