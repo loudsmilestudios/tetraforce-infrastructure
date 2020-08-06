@@ -14,7 +14,7 @@ jobs:
       uses: actions/checkout@v2.1.0
       with:
         submodules: 'true'
-    - name: Ship to S3
+    - name: Ship to CloudFormation S3
       uses: jakejarvis/s3-sync-action@master
       with:
         args: --follow-symlinks --delete
@@ -22,6 +22,34 @@ jobs:
         SOURCE_DIR: cloudformation
         AWS_REGION: "us-east-2"
         DEST_DIR: develop/cloudformation
+        AWS_S3_BUCKET: tetraforce-deployment-bucket
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.6"
+    - name: Build Lambdas
+      run: |
+        cd lambda
+        for file in `dir`
+        do
+          echo "Building: $file"
+          cd $file
+          echo "Installing requirements..."
+          pip install -q -r requirements.txt -t .
+          echo "Zipping..."
+          zip -qq -r ../$file.zip .
+          cd ..
+        done
+    - name: Ship to Lambdas S3
+      uses: jakejarvis/s3-sync-action@master
+      with:
+        args: --follow-symlinks --delete
+      env:
+        SOURCE_DIR: lambda
+        AWS_REGION: "us-east-2"
+        DEST_DIR: develop/lambda
         AWS_S3_BUCKET: tetraforce-deployment-bucket
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
