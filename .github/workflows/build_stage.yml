@@ -41,6 +41,8 @@ jobs:
           echo "Zipping..."
           zip -qq -r ../$file.zip .
           cd ..
+          echo "Cleaning up..."
+          rm -rf $file
         done
     - name: Ship to Lambdas S3
       uses: jakejarvis/s3-sync-action@master
