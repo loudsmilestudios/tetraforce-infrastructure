@@ -25,14 +25,14 @@ Resources:
       StageName: !Ref environment
 
   GetTasksLambda:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Lambda::Function
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.6
-      CodeUri:
-        Bucket: !Ref DeploymentBucket
-        Key: !Sub "${release}/lambda/get_tasks.zip"
-      FunctionName: !Sub "TetraForce-Api-${Environment}"
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/get_tasks.zip"
+      FunctionName: !Sub "TetraForce-Api-${environment}"
       Description: Lambda that returns ECS task information
       MemorySize: 128
       Timeout: 10

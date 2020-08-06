@@ -87,3 +87,4 @@ Resources:
       Parameters:
         environment: !Ref environment
         DeploymentBucket: !Ref DeploymentBucket
+        release: !Ref release
