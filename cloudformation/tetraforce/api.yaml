@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: TetraForce API
+Parameters:
+  environment:
+    Type: String
+    Description: Name of the environment to use in naming.
+    Default: production
+  ApiId:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/tetraforce/api/id'
+
+Resources:
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref ApiId
+      AutoDeploy: 'true'
+      Description: String
+      StageName: !Ref environment

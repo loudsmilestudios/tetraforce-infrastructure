@@ -79,3 +79,10 @@ Resources:
         DockerTag: !Ref DockerTag
         DockerRepoSecret: !Ref GitHubTokenSecret
         TaskExecutionRole: !GetAtt IAM.Outputs.EcsExecutioner
+
+  Api:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${DeploymentBucket}/${release}/cloudformation/tetraforce/api.yaml'
+      Parameters:
+        Environment: !Ref environment
