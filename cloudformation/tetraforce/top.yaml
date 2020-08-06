@@ -85,4 +85,4 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${DeploymentBucket}/${release}/cloudformation/tetraforce/api.yaml'
       Parameters:
-        Environment: !Ref environment
+        environment: !Ref environment
