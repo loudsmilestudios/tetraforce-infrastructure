@@ -88,3 +88,4 @@ Resources:
         environment: !Ref environment
         DeploymentBucket: !Ref DeploymentBucket
         release: !Ref release
+        LambdaRole: !GetAtt IAM.Outputs.LambdaRole

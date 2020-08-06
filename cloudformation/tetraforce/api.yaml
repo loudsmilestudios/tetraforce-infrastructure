@@ -9,12 +9,15 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/tetraforce/api/id'
   DeploymentBucket:
-    Description: S3 Bucket used in CloudFormation deployment
+    Description: S3 Bucket used in CloudFormation deployment.
     Type: String
   release:
     Type: String
     Description: Name of the release name of the stack version to use.
     Default: production
+  LambdaRole:
+    Type: String
+    Description: Arn of Lambda role assumed by fucntion.
 
 Resources:
   ApiStage:
@@ -32,6 +35,7 @@ Resources:
       Code:
         S3Bucket: !Ref DeploymentBucket
         S3Key: !Sub "${release}/lambda/get_tasks.zip"
+      Role: !Ref LambdaRole
       FunctionName: !Sub "TetraForce-Api-${environment}"
       Description: Lambda that returns ECS task information
       MemorySize: 128

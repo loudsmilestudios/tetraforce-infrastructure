@@ -45,7 +45,40 @@ Resources:
             Effect: Allow
             Resource: !Ref DockerRepoSecret
 
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Effect: Allow
+            Sid: AssumeRoleStatement
+  LambdaRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AllowLogsAndEc2
+      Roles:
+        - !Ref LambdaRole
+      PolicyDocument:
+        Statement:
+          - Sid: AllowLambdaLogging
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:GetLogEvents
+            Effect: Allow
+            Resource: "*"
+
 Outputs:
   EcsExecutioner:
     Description: IAM Role used by ECS Tasks
     Value: !GetAtt EcsExecutionerRole.Arn
+  LambdaRole:
+    Description: IAM Role used by Lambda functions
+    Value: !GetAtt LambdaRole.Arn
