@@ -8,6 +8,13 @@ Parameters:
   ApiId:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/tetraforce/api/id'
+  DeploymentBucket:
+    Description: S3 Bucket used in CloudFormation deployment
+    Type: String
+  release:
+    Type: String
+    Description: Name of the release name of the stack version to use.
+    Default: production
 
 Resources:
   ApiStage:
@@ -15,5 +22,17 @@ Resources:
     Properties:
       ApiId: !Ref ApiId
       AutoDeploy: 'true'
-      Description: String
       StageName: !Ref environment
+
+  GetTasksLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.6
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: !Sub "${release}/lambda/get_tasks.zip"
+      FunctionName: !Sub "TetraForce-Api-${Environment}"
+      Description: Lambda that returns ECS task information
+      MemorySize: 128
+      Timeout: 10
