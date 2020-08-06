@@ -27,6 +27,14 @@ Resources:
       AutoDeploy: 'true'
       StageName: !Ref environment
 
+  GetTasksLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*"
+      FunctionName: !GetAtt GetTasksLambda.Arn
+
   GetTasksLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -36,7 +44,7 @@ Resources:
         S3Bucket: !Ref DeploymentBucket
         S3Key: !Sub "${release}/lambda/get_tasks.zip"
       Role: !Ref LambdaRole
-      FunctionName: !Sub "TetraForce-Api-${environment}"
+      FunctionName: !Sub "TetraForce-Api-GetTasks-${environment}"
       Description: Lambda that returns ECS task information
       MemorySize: 128
       Timeout: 10
