@@ -5,9 +5,6 @@ Parameters:
     Type: String
     Description: Name of the environment to use in naming.
     Default: production
-  ApiId:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: '/tetraforce/api/id'
   DeploymentBucket:
     Description: S3 Bucket used in CloudFormation deployment.
     Type: String
@@ -26,11 +23,21 @@ Parameters:
     Description: Name of the task definition to use with lambda functions
 
 Resources:
+
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties: 
+      Description: Backend API for managing TetraForce game servers/tasks
+      Name: !Sub "TetraForce-API-${environment}"
+      ProtocolType: HTTP
+
+
   ApiStage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
-      ApiId: !Ref ApiId
-      StageName: !Ref environment
+      ApiId: !Ref HttpApi
+      AutoDeploy: 'true'
+      StageName: "$default"
 
 
   # =========
@@ -58,13 +65,13 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/*"
       FunctionName: !GetAtt GetTasksLambda.Arn
   # Create API Integration
   GetTasksIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties: 
-      ApiId: !Ref ApiId
+      ApiId: !Ref HttpApi
       Description: !Sub "Integration for Get Tasks Lambda ${environment} for environment"
       IntegrationType: AWS_PROXY
       PayloadFormatVersion: "2.0"
@@ -73,7 +80,7 @@ Resources:
   GetTasksRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties: 
-      ApiId: !Ref ApiId
+      ApiId: !Ref HttpApi
       RouteKey: "GET /get_tasks"
       Target: !Sub "integrations/${GetTasksIntegration}"
 
@@ -103,13 +110,13 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/*"
       FunctionName: !GetAtt CreateTaskLambda.Arn
   # Create API Integration
   CreateTaskIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties: 
-      ApiId: !Ref ApiId
+      ApiId: !Ref HttpApi
       Description: !Sub "Integration for Create Task Lambda ${environment} for environment"
       IntegrationType: AWS_PROXY
       PayloadFormatVersion: "2.0"
@@ -118,14 +125,6 @@ Resources:
   CreateTaskRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties: 
-      ApiId: !Ref ApiId
+      ApiId: !Ref HttpApi
       RouteKey: "GET /create_task"
       Target: !Sub "integrations/${CreateTaskIntegration}"
-
-
-  ApiDeployment:
-    Type: AWS::ApiGatewayV2::Deployment
-    Properties: 
-      ApiId: !Ref ApiId
-      Description: Deployment created by CloudFormation
-      StageName: !Ref environment
