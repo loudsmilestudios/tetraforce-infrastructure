@@ -24,17 +24,12 @@ Resources:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
       ApiId: !Ref ApiId
-      AutoDeploy: 'true'
       StageName: !Ref environment
 
-  GetTasksLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      Principal: sns.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*"
-      FunctionName: !GetAtt GetTasksLambda.Arn
 
+  # =========
+  # GET TASKS
+  # =========
   GetTasksLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -48,3 +43,27 @@ Resources:
       Description: Lambda that returns ECS task information
       MemorySize: 128
       Timeout: 10
+  # Grant permission to API Gateway
+  GetTasksLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*"
+      FunctionName: !GetAtt GetTasksLambda.Arn
+  # Create API Integration
+  GetTasksIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties: 
+      ApiId: !Ref ApiId
+      Description: !Sub "Integration for Get Tasks Lambda ${environment} for environment"
+      IntegrationType: AWS_PROXY
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !GetAtt GetTasksLambda.Arn
+  # Create Api Route
+  GetTasksRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties: 
+      ApiId: !Ref ApiId
+      RouteKey: "GET /get_tasks"
+      Target: !Sub "integrations/${GetTasksIntegration}"
