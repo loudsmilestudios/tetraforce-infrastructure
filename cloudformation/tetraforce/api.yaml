@@ -50,9 +50,9 @@ Resources:
       Runtime: python3.6
       Code:
         S3Bucket: !Ref DeploymentBucket
-        S3Key: !Sub "${release}/lambda/get_tasks.zip"
+        S3Key: !Sub "${release}/lambda/get_servers.zip"
       Role: !Ref LambdaRole
-      FunctionName: !Sub "TetraForce-Api-GetTasks-${environment}"
+      FunctionName: !Sub "TetraForce-Api-GetServers-${environment}"
       Description: Lambda that returns ECS task information
       MemorySize: 128
       Timeout: 10
@@ -81,7 +81,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties: 
       ApiId: !Ref HttpApi
-      RouteKey: "GET /get_tasks"
+      RouteKey: "GET /get_servers"
       Target: !Sub "integrations/${GetTasksIntegration}"
 
   # ============
@@ -94,9 +94,9 @@ Resources:
       Runtime: python3.6
       Code:
         S3Bucket: !Ref DeploymentBucket
-        S3Key: !Sub "${release}/lambda/create_task.zip"
+        S3Key: !Sub "${release}/lambda/create_server.zip"
       Role: !Ref LambdaRole
-      FunctionName: !Sub "TetraForce-Api-CreateTask-${environment}"
+      FunctionName: !Sub "TetraForce-Api-CreateServer-${environment}"
       Description: Lambda that returns newly created ecs task
       MemorySize: 128
       Timeout: 120
@@ -126,7 +126,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties: 
       ApiId: !Ref HttpApi
-      RouteKey: "GET /create_task"
+      RouteKey: "POST /create_server"
       Target: !Sub "integrations/${CreateTaskIntegration}"
 
   # ==========
@@ -139,9 +139,9 @@ Resources:
       Runtime: python3.6
       Code:
         S3Bucket: !Ref DeploymentBucket
-        S3Key: !Sub "${release}/lambda/stop_task.zip"
+        S3Key: !Sub "${release}/lambda/stop_server.zip"
       Role: !Ref LambdaRole
-      FunctionName: !Sub "TetraForce-Api-StopTask-${environment}"
+      FunctionName: !Sub "TetraForce-Api-StopServer-${environment}"
       Description: Lambda that stops an ecs task
       MemorySize: 128
       Timeout: 120
@@ -170,5 +170,5 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties: 
       ApiId: !Ref HttpApi
-      RouteKey: "GET /stop_task"
+      RouteKey: "POST /stop_server"
       Target: !Sub "integrations/${StopTaskIntegration}"
