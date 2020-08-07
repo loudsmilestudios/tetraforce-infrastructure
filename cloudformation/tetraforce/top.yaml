@@ -90,3 +90,4 @@ Resources:
         release: !Ref release
         LambdaRole: !GetAtt IAM.Outputs.LambdaRole
         EcsCluster: !GetAtt EcsCluster.Outputs.Cluster
+        TaskDefinition: !GetAtt TaskDefinition.Outputs.TaskFamily

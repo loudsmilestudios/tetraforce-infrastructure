@@ -21,6 +21,9 @@ Parameters:
   EcsCluster:
     Type: String
     Description: Name of ECS cluster connected to lambda functions
+  TaskDefinition:
+    Type: String
+    Description: Name of the task definition to use with lambda functions
 
 Resources:
   ApiStage:
@@ -54,7 +57,7 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      Principal: sns.amazonaws.com
+      Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*"
       FunctionName: !GetAtt GetTasksLambda.Arn
   # Create API Integration
@@ -73,6 +76,51 @@ Resources:
       ApiId: !Ref ApiId
       RouteKey: "GET /get_tasks"
       Target: !Sub "integrations/${GetTasksIntegration}"
+
+  # ============
+  # CREATE TASKS
+  # ============
+  CreateTaskLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.6
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/create_task.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-CreateTask-${environment}"
+      Description: Lambda that returns newly created ecs task
+      MemorySize: 128
+      Timeout: 120
+      Environment:
+        Variables:
+          CLUSTER: !Ref EcsCluster
+          TASK_DEFINITION: !Ref TaskDefinition
+  # Grant permission to API Gateway
+  CreateTaskLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*"
+      FunctionName: !GetAtt CreateTaskLambda.Arn
+  # Create API Integration
+  CreateTaskIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties: 
+      ApiId: !Ref ApiId
+      Description: !Sub "Integration for Create Task Lambda ${environment} for environment"
+      IntegrationType: AWS_PROXY
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !GetAtt CreateTaskLambda.Arn
+  # Create Api Route
+  CreateTaskRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties: 
+      ApiId: !Ref ApiId
+      RouteKey: "GET /create_task"
+      Target: !Sub "integrations/${CreateTaskIntegration}"
 
 
   ApiDeployment:

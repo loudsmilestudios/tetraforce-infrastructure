@@ -84,6 +84,11 @@ Resources:
               - ec2:List*
             Effect: Allow
             Resource: "*"
+          - Sid: AllowEcsRunTask
+            Action:
+              - ecs:RunTask
+            Effect: Allow
+            Resource: !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/TetraForce-*"
 
 
 Outputs:
