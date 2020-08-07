@@ -17,11 +17,14 @@ def lambda_handler(event, context):
 
     response = {}
     
-    response = ecs.stop_task(
-        cluster=os.environ.get("CLUSTER"),
-        task=event['queryStringParameters']['server'],
-        reason="Requested stop from public API endpoint"
-    )
+    try:
+        response = ecs.stop_task(
+            cluster=os.environ.get("CLUSTER"),
+            task=event['queryStringParameters']['server'],
+            reason="Requested stop from public API endpoint"
+        )
+    except ecs.exceptions.InvalidParameterException as e:
+        return build_response("The server you are trying to stop does not exist!", False)
     
     if 'task' in response:
     
