@@ -23,9 +23,9 @@ def lambda_handler(event, context):
         reason="Requested stop from public API endpoint"
     )
     
-    if 'tasks' in response and len(response['tasks']) > 0:
+    if 'task' in response:
     
-        task = response['tasks'][0]['taskArn']
+        task = response['task']['taskArn']
         waiter = ecs.get_waiter('tasks_stopped')
         waiter.wait(tasks=[task], cluster=os.environ.get("CLUSTER"))
         
