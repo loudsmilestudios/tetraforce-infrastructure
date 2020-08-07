@@ -89,6 +89,11 @@ Resources:
               - ecs:RunTask
             Effect: Allow
             Resource: !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/TetraForce-*"
+          - Sid: AllowEcsStopTask
+            Action:
+              - ecs:StopTask
+            Effect: Allow
+            Resource: "*"
           - Sid: PassRoleToEcs
             Action:
               - iam:PassRole

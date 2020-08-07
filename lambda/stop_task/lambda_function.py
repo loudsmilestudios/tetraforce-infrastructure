@@ -12,7 +12,7 @@ ecs = boto3.client('ecs')
 
 def lambda_handler(event, context):
     
-    if not 'queryStringParameters' in event or not 'server' in 'queryStringParameters':
+    if not 'queryStringParameters' in event or not 'server' in event['queryStringParameters']:
         return build_response("Stop task requires 'server' parameter!", False)
 
     response = {}
