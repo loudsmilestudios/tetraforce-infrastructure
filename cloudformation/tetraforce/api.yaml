@@ -128,3 +128,47 @@ Resources:
       ApiId: !Ref HttpApi
       RouteKey: "GET /create_task"
       Target: !Sub "integrations/${CreateTaskIntegration}"
+
+  # ==========
+  # STOP TASKS
+  # ==========
+  StopTaskLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.6
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/stop_task.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-StopTask-${environment}"
+      Description: Lambda that stops an ecs task
+      MemorySize: 128
+      Timeout: 120
+      Environment:
+        Variables:
+          CLUSTER: !Ref EcsCluster
+  # Grant permission to API Gateway
+  StopTaskLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/*"
+      FunctionName: !GetAtt StopTaskLambda.Arn
+  # Create API Integration
+  StopTaskIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties: 
+      ApiId: !Ref HttpApi
+      Description: !Sub "Integration for Stop Task Lambda ${environment} for environment"
+      IntegrationType: AWS_PROXY
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !GetAtt StopTaskLambda.Arn
+  # Create Api Route
+  StopTaskRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties: 
+      ApiId: !Ref HttpApi
+      RouteKey: "GET /stop_task"
+      Target: !Sub "integrations/${StopTaskIntegration}"
