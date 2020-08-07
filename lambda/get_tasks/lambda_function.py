@@ -9,6 +9,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 ecs = boto3.client('ecs')
+ec2 = boto3.resource('ec2')
 
 def lambda_handler(event, context):
     if "queryStringParameters" in event and "server" in event["queryStringParameters"]:
@@ -53,11 +54,13 @@ def get_task_info(task_id_list):
                         # Add binding at server port
                         if binding['containerPort'] == os.environ.get('SERVER_PORT', 7777):
                             server['port'] = binding['hostPort']
-                            server['ip'] = binding['bindIP']
+                            server['ip'] = get_container_instance_ip(task['containerInstanceArn'])
                             break
 
+                    
+
                     # Add task to list once it's found port info
-                    if 'port' in server:
+                    if 'port' in server and 'ip' in server:
                         tasks_info.append(server)
                         break
 
@@ -97,6 +100,17 @@ def get_tasks(page=0):
         current_page = current_page + 1
 
     return tasks
+
+def get_container_instance_ip(container_instance):
+    response = ecs.describe_container_instances(
+        cluster=os.environ.get('CLUSTER'),
+        containerInstances=[container_instance]
+    )
+    if 'containerInstances' in response and len(response['containerInstances']) > 0:
+        instance = ec2.Instance(response['containerInstances'][0]['ec2InstanceId'])
+        return instance.public_ip_address
+    
+    raise "Container instance not found!"
 
 # CLI for testing lambda
 if __name__ == '__main__':

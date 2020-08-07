@@ -74,11 +74,14 @@ Resources:
               - logs:GetLogEvents
             Effect: Allow
             Resource: "*"
-          - Sid: AllowEcsRead
+          - Sid: AllowEcsEc2Read
             Action:
               - ecs:List*
               - ecs:Describe*
               - ecs:Get*
+              - ec2:Describe*
+              - ec2:Get*
+              - ec2:List*
             Effect: Allow
             Resource: "*"
 
