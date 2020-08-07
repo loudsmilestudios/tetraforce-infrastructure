@@ -12,11 +12,16 @@ ecs = boto3.client('ecs')
 
 def lambda_handler(event, context):
     
-    response = ecs.run_task(
-        cluster=os.environ.get("CLUSTER"),
-        taskDefinition=os.environ.get("TASK_DEFINITION"),
-        startedBy="Public Api Endpoint"
-    )
+    response = {}
+    
+    try:
+        response = ecs.run_task(
+            cluster=os.environ.get("CLUSTER"),
+            taskDefinition=os.environ.get("TASK_DEFINITION"),
+            startedBy="Public Api Endpoint"
+        )
+    except ecs.exceptions.InvalidParameterException as e:
+        return build_response("This environment has no running cloud servers to run on!", False)
     
     if 'tasks' in response:
         if 'failures' in response and len(response['failures']) > 0:

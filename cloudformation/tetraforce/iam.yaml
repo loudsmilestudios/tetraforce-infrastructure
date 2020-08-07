@@ -89,6 +89,14 @@ Resources:
               - ecs:RunTask
             Effect: Allow
             Resource: !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/TetraForce-*"
+          - Sid: PassRoleToEcs
+            Action:
+              - iam:PassRole
+              - iam:Get*
+              - iam:List*
+              - iam:Describe*
+            Effect: Allow
+            Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/TetraForce*"
 
 
 Outputs:

@@ -79,4 +79,4 @@ Resources:
               - iam:List*
               - iam:Describe*
             Effect: Allow
-            Resource: arn:aws:iam::942134138525:role/TetraForce*
+            Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/TetraForce*"
