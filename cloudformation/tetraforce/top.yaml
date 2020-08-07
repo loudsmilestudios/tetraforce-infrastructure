@@ -89,3 +89,4 @@ Resources:
         DeploymentBucket: !Ref DeploymentBucket
         release: !Ref release
         LambdaRole: !GetAtt IAM.Outputs.LambdaRole
+        EcsCluster: !GetAtt EcsCluster.Outputs.Cluster

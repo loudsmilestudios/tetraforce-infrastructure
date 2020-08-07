@@ -61,7 +61,7 @@ Resources:
   LambdaRolePolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: AllowLogsAndEc2
+      PolicyName: AllowLogsAndEcs
       Roles:
         - !Ref LambdaRole
       PolicyDocument:
@@ -74,6 +74,14 @@ Resources:
               - logs:GetLogEvents
             Effect: Allow
             Resource: "*"
+          - Sid: AllowEcsRead
+            Action:
+              - ecs:List*
+              - ecs:Describe*
+              - ecs:Get*
+            Effect: Allow
+            Resource: "*"
+
 
 Outputs:
   EcsExecutioner:

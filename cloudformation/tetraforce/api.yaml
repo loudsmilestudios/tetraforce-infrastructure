@@ -18,6 +18,9 @@ Parameters:
   LambdaRole:
     Type: String
     Description: Arn of Lambda role assumed by fucntion.
+  EcsCluster:
+    Type: String
+    Description: Name of ECS cluster connected to lambda functions
 
 Resources:
   ApiStage:
@@ -43,6 +46,9 @@ Resources:
       Description: Lambda that returns ECS task information
       MemorySize: 128
       Timeout: 10
+      Environment:
+        Variables:
+          CLUSTER: !Ref EcsCluster
   # Grant permission to API Gateway
   GetTasksLambdaPermission:
     Type: AWS::Lambda::Permission
