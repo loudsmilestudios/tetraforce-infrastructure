@@ -12,18 +12,32 @@ ecs = boto3.client('ecs')
 ec2 = boto3.resource('ec2')
 
 def lambda_handler(event, context):
+    data = None
     if "queryStringParameters" in event and "server" in event["queryStringParameters"]:
         server_info = get_task_info([event["queryStringParameters"]["server"]])
         logger.info("Returning queried server: " + event["queryStringParameters"]["server"])
-        return json.dumps(server_info)
+        data = server_info
     elif "queryStringParameters" in event and "page" in event["queryStringParameters"]:
         server_info = get_task_info(get_tasks(int(event["queryStringParameters"]["page"])))
         logger.info("Returning page: " + str(event["queryStringParameters"]["page"]))
-        return json.dumps(server_info)
+        data = server_info
     else:
         server_info = get_task_info(get_tasks())
         logger.info("Returning general query")
-        return json.dumps(server_info)
+        data = server_info
+    
+    if data != None:
+        return json.dumps({
+            "message" : "Success",
+            "success" : True,
+            "data" : data
+        })
+    else:
+        return json.dumps({
+            "message" : "Empty",
+            "success" : False,
+            "data" : []
+        })
 
 def get_task_info(task_id_list):
     if len(task_id_list) == 0:
