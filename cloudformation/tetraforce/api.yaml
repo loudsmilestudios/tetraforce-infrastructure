@@ -67,3 +67,11 @@ Resources:
       ApiId: !Ref ApiId
       RouteKey: "GET /get_tasks"
       Target: !Sub "integrations/${GetTasksIntegration}"
+
+
+  ApiDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    Properties: 
+      ApiId: !Ref ApiId
+      Description: Deployment created by CloudFormation
+      StageName: !Ref environment
