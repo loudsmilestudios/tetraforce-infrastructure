@@ -13,6 +13,10 @@ Parameters:
     Description: Arn of secret in AWS Secrets Manager holding Docker repo credentials
     Type: String
 
+  ServerlistTable:
+    Description: Name of the serverlist dynamodb table
+    Type: String
+
 Resources:
   EcsExecutionerRole:
     Type: AWS::IAM::Role
@@ -102,6 +106,19 @@ Resources:
               - iam:Describe*
             Effect: Allow
             Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/TetraForce*"
+          - Sid: ServerlistDynamodbAcces
+            Action:
+              - dynamodb:Get*
+              - dynamodb:Describe*
+              - dynamodb:List*
+              - dynamodb:Query
+              - dynamodb:BatchGet*
+              - dynamodb:BatchWrite*
+              - dynamodb:DeleteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+            Effect: Allow
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ServerlistTable}"
 
 
 Outputs:

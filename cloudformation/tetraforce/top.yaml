@@ -57,6 +57,7 @@ Resources:
       Parameters:
         environment: !Ref environment
         DockerRepoSecret: !Ref GitHubTokenSecret
+        ServerlistTable: !GetAtt Persistence.Outputs.ServerlistTable
 
   EcsCluster:
     Type: AWS::CloudFormation::Stack
@@ -88,7 +89,6 @@ Resources:
         environment: !Ref environment
         DeploymentBucket: !Ref DeploymentBucket
         release: !Ref release
-        LambdaRole: !GetAtt IAM.Outputs.LambdaRole
 
   Api:
     Type: AWS::CloudFormation::Stack
@@ -101,3 +101,4 @@ Resources:
         LambdaRole: !GetAtt IAM.Outputs.LambdaRole
         EcsCluster: !GetAtt EcsCluster.Outputs.Cluster
         TaskDefinition: !GetAtt TaskDefinition.Outputs.TaskFamily
+        ServerlistTable: !GetAtt Persistence.Outputs.ServerlistTable

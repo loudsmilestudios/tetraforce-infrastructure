@@ -21,6 +21,9 @@ Parameters:
   TaskDefinition:
     Type: String
     Description: Name of the task definition to use with lambda functions
+  ServerlistTable:
+    Description: Name of the serverlist dynamodb table
+    Type: String
 
 Resources:
 
@@ -59,6 +62,7 @@ Resources:
       Environment:
         Variables:
           CLUSTER: !Ref EcsCluster
+          SERVERLIST_TABLE: !Ref ServerlistTable
   # Grant permission to API Gateway
   GetTasksLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -104,6 +108,7 @@ Resources:
         Variables:
           CLUSTER: !Ref EcsCluster
           TASK_DEFINITION: !Ref TaskDefinition
+          SERVERLIST_TABLE: !Ref ServerlistTable
   # Grant permission to API Gateway
   CreateTaskLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -148,6 +153,7 @@ Resources:
       Environment:
         Variables:
           CLUSTER: !Ref EcsCluster
+          SERVERLIST_TABLE: !Ref ServerlistTable
   # Grant permission to API Gateway
   StopTaskLambdaPermission:
     Type: AWS::Lambda::Permission

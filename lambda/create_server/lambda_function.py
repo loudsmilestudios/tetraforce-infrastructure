@@ -1,5 +1,7 @@
 import os, logging, boto3, json
 
+from lobby_name_generator import generate_unique_name, is_name_free
+
 if __name__ != "__main__":
     from aws_xray_sdk.core import xray_recorder
     from aws_xray_sdk.core import patch_all
@@ -9,8 +11,19 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 ecs = boto3.client('ecs')
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table(os.environ.get("SERVERLIST_TABLE"))
 
 def lambda_handler(event, context):
+    
+    server_name = ""
+    if "queryStringParameters" in event and "server" in event["queryStringParameters"]:
+        server_name = event["queryStringParameters"]["server"]
+        if not is_name_free(server_name, table):
+            return build_response("Name '" + server_name + "' is not free to use!", False)
+
+    if server_name == "":
+        server_name = generate_unique_name(table)
     
     response = {}
     
@@ -38,9 +51,12 @@ def lambda_handler(event, context):
         waiter = ecs.get_waiter('tasks_running')
         waiter.wait(tasks=[response['tasks'][0]['taskArn']], cluster=os.environ.get("CLUSTER"))
         
-        lobby = task
+        table.put_item(
+            Item={"name" : server_name,
+                  "task" : task }
+        )
         
-        return build_response(lobby, True)
+        return build_response(server_name, True)
     else:
         logger.error(response)
         return unknown_error_response()

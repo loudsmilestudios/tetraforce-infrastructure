@@ -12,9 +12,6 @@ Parameters:
     Type: String
     Description: Name of the release name of the stack version to use.
     Default: production
-  LambdaRole:
-    Type: String
-    Description: Arn of Lambda role assumed by functions.
 
 Resources:
 
@@ -33,4 +30,7 @@ Resources:
         - AttributeName: name
           AttributeType: S
 
-      
+Outputs:
+  ServerlistTable:
+    Value: !Sub "TetraForce-ServerList-${environment}"
+    Description: Name of the serverlist dynamodb table
