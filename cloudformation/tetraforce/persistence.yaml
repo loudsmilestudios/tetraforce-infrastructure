@@ -32,7 +32,5 @@ Resources:
       AttributeDefinitions:
         - AttributeName: name
           AttributeType: S
-        - AttributeName: task
-          AttributeType: S
 
       
