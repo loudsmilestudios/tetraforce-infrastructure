@@ -14,14 +14,18 @@ table = dynamodb.Table(os.environ.get("SERVERLIST_TABLE"))
 
 def lambda_handler(event, context):
     
+    # Check that proper query parameters were passed
     if not 'queryStringParameters' in event or not 'server' in event['queryStringParameters']:
         return build_response("Stop task requires 'server' parameter!", False)
 
     server_name = event['queryStringParameters']['server']
 
+    # Lookup item in table
     aws_resp = table.get_item(
         Key={"name" : server_name}
     )
+
+    # Verify item exists
     if not 'Item' in aws_resp:
         return build_response("The server you are trying to stop does not exist", False)
     if not 'task' in aws_resp['Item']:
@@ -29,6 +33,7 @@ def lambda_handler(event, context):
 
     response = {}
     
+    # Attempt to delete task
     try:
         response = ecs.stop_task(
             cluster=os.environ.get("CLUSTER"),
@@ -40,6 +45,7 @@ def lambda_handler(event, context):
     
     if 'task' in response:
     
+        # Delete item from dynamo table
         table.delete_item(
             Key={ "name" : server_name }
         )

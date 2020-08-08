@@ -17,16 +17,20 @@ table = dynamodb.Table(os.environ.get("SERVERLIST_TABLE"))
 def lambda_handler(event, context):
     
     server_name = ""
+
+    # Check if server name is being passed
     if "queryStringParameters" in event and "server" in event["queryStringParameters"]:
         server_name = event["queryStringParameters"]["server"]
         if not is_name_free(server_name, table):
             return build_response("Name '" + server_name + "' is not free to use!", False)
 
+    # Generate unique server name if not name is provided
     if server_name == "":
         server_name = generate_unique_name(table)
     
     response = {}
     
+    # Attempt to start ECS task
     try:
         response = ecs.run_task(
             cluster=os.environ.get("CLUSTER"),
@@ -36,6 +40,7 @@ def lambda_handler(event, context):
     except ecs.exceptions.InvalidParameterException as e:
         return build_response("This environment has no running cloud servers to run on!", False)
     
+    # Check for failures
     if 'tasks' in response:
         if 'failures' in response and len(response['failures']) > 0:
             failure = response['failures'][0]
@@ -49,6 +54,7 @@ def lambda_handler(event, context):
     
         task = response['tasks'][0]['taskArn']
         
+        # Update dynamodb table
         table.put_item(
             Item={"name" : server_name,
                   "task" : task }

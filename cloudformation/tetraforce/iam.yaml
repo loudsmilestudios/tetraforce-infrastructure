@@ -112,6 +112,7 @@ Resources:
               - dynamodb:Describe*
               - dynamodb:List*
               - dynamodb:Query
+              - dynamodb:Scan
               - dynamodb:BatchGet*
               - dynamodb:BatchWrite*
               - dynamodb:DeleteItem

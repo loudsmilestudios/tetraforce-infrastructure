@@ -10,22 +10,31 @@ logger.setLevel(logging.INFO)
 
 ecs = boto3.client('ecs')
 ec2 = boto3.resource('ec2')
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table(os.environ.get("SERVERLIST_TABLE"))
 
 def lambda_handler(event, context):
     data = None
+
+    # Looks up information for specific server
     if "queryStringParameters" in event and "server" in event["queryStringParameters"]:
-        server_info = get_task_info([event["queryStringParameters"]["server"]])
         logger.info("Returning queried server: " + event["queryStringParameters"]["server"])
-        data = server_info
+        result = table.get_item(
+            Key={"name" : event["queryStringParameters"]["server"] }
+        )
+        if 'Item' in result:
+            data = replace_dynamo_with_data(result['Item'])
+
+    # Lookup information for specified page
     elif "queryStringParameters" in event and "page" in event["queryStringParameters"]:
-        server_info = get_task_info(get_tasks(int(event["queryStringParameters"]["page"])))
         logger.info("Returning page: " + str(event["queryStringParameters"]["page"]))
-        data = server_info
+        data = get_server_list(int(event["queryStringParameters"]["page"]))
     else:
-        server_info = get_task_info(get_tasks())
+        # Lookup page 0
         logger.info("Returning general query")
-        data = server_info
+        data = get_server_list()
     
+    # Return data
     if data != None:
         return json.dumps({
             "message" : "Success",
@@ -38,6 +47,43 @@ def lambda_handler(event, context):
             "success" : False,
             "data" : []
         })
+
+page_size = 20
+max_page_count = os.environ.get("MAX_PAGE_COUNT", 10)
+def get_server_list(page=0):
+    if page > max_page_count:
+        page = max_page_count
+    resp = table.scan(Limit=page_size,Select='ALL_ATTRIBUTES')
+
+    # Loop through number of pages after intial page (0)
+    for _ in range(page):
+        if 'Items' in resp:
+            if 'LastEvaluatedKey' in resp:
+                resp = table.scan(Limit=page_size,Select='ALL_ATTRIBUTES',ExclusiveStartKey=resp['LastEvaluatedKey'])
+        else:
+            resp = {}
+    
+    if 'Items' in resp:
+        items = resp['Items']
+        
+        # Use function to replace `task` with ip and port information
+        for item in items:
+            item = replace_dynamo_with_data(item)
+        return items
+
+    else:
+        return []
+
+# Replaces task with ip and port
+def replace_dynamo_with_data(dynamo_item):
+    task = dynamo_item['task']
+    del dynamo_item['task']
+
+    info = get_task_info([task])
+    dynamo_item['ip'] = info[0]['ip']
+    dynamo_item['port'] = info[0]['port']
+
+    return dynamo_item
 
 def get_task_info(task_id_list):
     if len(task_id_list) == 0:
