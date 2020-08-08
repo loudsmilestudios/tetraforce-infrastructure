@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: TetraForce Persistence Stack
+Parameters:
+  environment:
+    Type: String
+    Description: Name of the environment to use in naming.
+    Default: production
+  DeploymentBucket:
+    Description: S3 Bucket used in CloudFormation deployment.
+    Type: String
+  release:
+    Type: String
+    Description: Name of the release name of the stack version to use.
+    Default: production
+  LambdaRole:
+    Type: String
+    Description: Arn of Lambda role assumed by functions.
+
+Resources:
+
+  ServerlistTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: !Sub "TetraForce-ServerList-${environment}"
+      BillingMode: PROVISIONED
+      KeySchema: 
+        - AttributeName: name
+          KeyType: HASH
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      

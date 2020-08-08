@@ -80,6 +80,16 @@ Resources:
         DockerRepoSecret: !Ref GitHubTokenSecret
         TaskExecutionRole: !GetAtt IAM.Outputs.EcsExecutioner
 
+  Persistence:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${DeploymentBucket}/${release}/cloudformation/tetraforce/persistence.yaml'
+      Parameters:
+        environment: !Ref environment
+        DeploymentBucket: !Ref DeploymentBucket
+        release: !Ref release
+        LambdaRole: !GetAtt IAM.Outputs.LambdaRole
+
   Api:
     Type: AWS::CloudFormation::Stack
     Properties:
