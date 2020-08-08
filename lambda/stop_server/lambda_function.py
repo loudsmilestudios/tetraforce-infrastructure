@@ -43,10 +43,6 @@ def lambda_handler(event, context):
         table.delete_item(
             Key={ "name" : server_name }
         )
-
-        task = response['task']['taskArn']
-        waiter = ecs.get_waiter('tasks_stopped')
-        waiter.wait(tasks=[task], cluster=os.environ.get("CLUSTER"))
         
         return build_response("Tasks have successfully stopped!", True)
     else:

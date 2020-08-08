@@ -80,7 +80,6 @@ Resources:
       IntegrationType: AWS_PROXY
       PayloadFormatVersion: "2.0"
       IntegrationUri: !GetAtt GetTasksLambda.Arn
-      TimeoutInMillis: 120000
   # Create Api Route
   GetTasksRoute:
     Type: AWS::ApiGatewayV2::Route
@@ -127,7 +126,6 @@ Resources:
       IntegrationType: AWS_PROXY
       PayloadFormatVersion: "2.0"
       IntegrationUri: !GetAtt CreateTaskLambda.Arn
-      TimeoutInMillis: 120000
   # Create Api Route
   CreateTaskRoute:
     Type: AWS::ApiGatewayV2::Route
@@ -173,7 +171,6 @@ Resources:
       IntegrationType: AWS_PROXY
       PayloadFormatVersion: "2.0"
       IntegrationUri: !GetAtt StopTaskLambda.Arn
-      TimeoutInMillis: 120000
   # Create Api Route
   StopTaskRoute:
     Type: AWS::ApiGatewayV2::Route

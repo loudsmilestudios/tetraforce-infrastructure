@@ -48,8 +48,6 @@ def lambda_handler(event, context):
     if len(response['tasks']) > 0:
     
         task = response['tasks'][0]['taskArn']
-        waiter = ecs.get_waiter('tasks_running')
-        waiter.wait(tasks=[response['tasks'][0]['taskArn']], cluster=os.environ.get("CLUSTER"))
         
         table.put_item(
             Item={"name" : server_name,
