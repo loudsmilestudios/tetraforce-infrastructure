@@ -69,6 +69,7 @@ Resources:
         SubnetIds: !Join [",", !Split [" ", !Ref PublicSubnets]]
         Project: "TetraForce"
         AsgDesiredCapacity: !Ref AsgDesiredCapacity
+        InstanceType: t3a.medium
 
   TaskDefinition:
     Type: AWS::CloudFormation::Stack
