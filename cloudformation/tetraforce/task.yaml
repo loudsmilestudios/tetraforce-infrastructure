@@ -43,7 +43,7 @@ Resources:
         Image: !Sub "docker.pkg.github.com/fornclake/tetraforce/tetraforce:${DockerTag}"
         RepositoryCredentials:
           CredentialsParameter: !Ref DockerRepoSecret
-        MemoryReservation: 250
+        MemoryReservation: 100
         PortMappings:
         - HostPort: 0
           ContainerPort: 7777
