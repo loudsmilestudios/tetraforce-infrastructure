@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: TetraForce API
+Parameters:
+  environment:
+    Type: String
+    Description: Name of the environment to use in naming.
+    Default: production
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      BucketName: !Sub "tetraforce-releases-${environment}-${AWS::Region}"
+      Tags:
+        - Key: environment
+          Value: !Ref environment
+      WebsiteConfiguration:
+        IndexDocument: "404.html"
+        ErrorDocument: "404.html"
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: "*"
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${S3Bucket}/*"
