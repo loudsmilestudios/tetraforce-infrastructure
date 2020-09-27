@@ -60,7 +60,7 @@ Resources:
             Principal:
               Service:
                 - lambda.amazonaws.com
-                - cloudwatch.amazonaws.com
+                - events.amazonaws.com
             Effect: Allow
             Sid: AssumeRoleStatement
   LambdaRolePolicy:
