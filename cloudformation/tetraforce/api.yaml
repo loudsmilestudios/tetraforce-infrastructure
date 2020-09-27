@@ -178,3 +178,34 @@ Resources:
       ApiId: !Ref HttpApi
       RouteKey: "POST /stop_server"
       Target: !Sub "integrations/${StopTaskIntegration}"
+
+  # =============
+  # ON TASK STOP
+  # =============
+  OnTaskStopLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.6
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/on_server_stop.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-OnTaskStop-${environment}"
+      Description: Lambda that cleans task from DynamoDB table
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          CLUSTER: !Ref EcsCluster
+          SERVERLIST_TABLE: !Ref ServerlistTable
+  OnTaskStopRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: !Sub "Calls lambda anytime a task is stopped in TetraForce-${environment}"
+      EventPattern: { "source": "aws.ecs", "detail-type": [ "ECS Task State Change" ] }
+      Name: !Sub "TetraForce-OnTaskStop-${environment}"
+      RoleArn: !Ref LambdaRole
+      Targets:
+        - Arn: !GetAtt OnTaskStopLambda.Arn
+          Id: "OnTaskStopLambda"

@@ -40,20 +40,9 @@ def lambda_handler(event, context):
             task=aws_resp['Item']['task'],
             reason="Requested stop from public API endpoint"
         )
+        return build_response("Tasks have successfully stopped!", True)
     except ecs.exceptions.InvalidParameterException as e:
         return build_response("Tried to stop task, but was unable to find task in cluster!", False)
-    
-    if 'task' in response:
-    
-        # Delete item from dynamo table
-        table.delete_item(
-            Key={ "name" : server_name }
-        )
-        
-        return build_response("Tasks have successfully stopped!", True)
-    else:
-        logger.error(response)
-        return unknown_error_response()
 
 def unknown_error_response():
     return build_response("An unknown error occured!", False)
