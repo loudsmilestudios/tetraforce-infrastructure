@@ -203,7 +203,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties:
       Description: !Sub "Calls lambda anytime a task is stopped in TetraForce-${environment}"
-      EventPattern: { "source": "aws.ecs", "detail-type": [ "ECS Task State Change" ] }
+      EventPattern: { "source": ["aws.ecs"], "detail-type": [ "ECS Task State Change" ] }
       Name: !Sub "TetraForce-OnTaskStop-${environment}"
       RoleArn: !Ref LambdaRole
       Targets:
