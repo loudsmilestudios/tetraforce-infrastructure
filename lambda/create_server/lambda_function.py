@@ -54,6 +54,12 @@ def lambda_handler(event, context):
                     "assignPublicIp": "ENABLED"
                 }
             },
+            tags=[
+                {
+                    "key": "Name",
+                    "value": server_name
+                },
+            ],
         )
     except ecs.exceptions.InvalidParameterException as e:
         logger.error(str(e))
