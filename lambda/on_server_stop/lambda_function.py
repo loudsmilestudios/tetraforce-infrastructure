@@ -13,23 +13,29 @@ table = dynamodb.Table(os.environ.get("SERVERLIST_TABLE"))
 
 def lambda_handler(event, context):
     
-    for task_arn in event["resources"]:
+    task = event["detail"]
 
-        # Lookup item in table
-        aws_resp = table.get_item(
-            Key={"task" : task_arn}
+    # Lookup item in table
+    aws_resp = table.query(
+        IndexName="task",
+        KeyConditionExpression="task = :a",
+        ExpressionAttributeValues= {
+            ":a": task["taskArn"]
+        }
+    )
+
+    # Verify item exists
+    if not 'Items' in aws_resp or len(aws_resp['Items']) == 0:
+        logger.error(f"The server you are trying to stop does not exist: {task['taskArn']}")
+    if not 'task' in aws_resp['Items'][0]:
+        logger.error(f"The server you are trying to stop does not have an associated task: {task['taskArn']}")
+    if task["desiredStatus"] != "STOPPED":
+        logger.warning(f"Task '{task['taskArn']}' not stopped ignoring!")
+    elif 'task' in aws_resp['Items'][0]:
+        # Delete item from dynamo table
+        logger.info(f"Removing {aws_resp['Items'][0]['name']} from database")
+        table.delete_item(
+            Key={ "name" : aws_resp['Items'][0]["name"] }
         )
-
-        # Verify item exists
-        if not 'Item' in aws_resp:
-            logger.error(f"The server you are trying to stop does not exist: {task_arn}")
-        if not 'task' in aws_resp['Item']:
-            logger.error(f"The server you are trying to stop does not have an associated task: {task_arn}")
-
-        if 'task' in aws_resp:
-            # Delete item from dynamo table
-            table.delete_item(
-                Key={ "task" : task_arn }
-            )
-        else:
-            logger.error(aws_resp)
+    else:
+        logger.error(aws_resp)

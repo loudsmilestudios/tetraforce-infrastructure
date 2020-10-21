@@ -29,6 +29,18 @@ Resources:
       AttributeDefinitions:
         - AttributeName: name
           AttributeType: S
+        - AttributeName: task
+          AttributeType: S
+      GlobalSecondaryIndexes:
+        - IndexName: task
+          KeySchema:
+          - AttributeName: task
+            KeyType: HASH
+          Projection:
+            ProjectionType: KEYS_ONLY
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
 
 Outputs:
   ServerlistTable:
