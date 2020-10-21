@@ -59,17 +59,22 @@ Resources:
         DockerRepoSecret: !Ref GitHubTokenSecret
         ServerlistTable: !GetAtt Persistence.Outputs.ServerlistTable
 
-  EcsCluster:
-    Type: AWS::CloudFormation::Stack
+  FargateCluster:
+    Type: AWS::ECS::Cluster
     Properties:
-      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${DeploymentBucket}/${release}/cloudformation/cluster/top.yaml'
-      Parameters:
-        Environment: !Ref environment
-        VpcId: !Ref VpcId
-        SubnetIds: !Join [",", !Split [" ", !Ref PublicSubnets]]
-        Project: "TetraForce"
-        AsgDesiredCapacity: !Ref AsgDesiredCapacity
-        InstanceType: t3a.medium
+      ClusterName: !Sub "TetraForce-${environment}"
+
+  TaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "TetraForce-${environment}-task"
+      GroupDescription: Opens port 7777 to world!
+      SecurityGroupIngress:
+      - Description: Opens game server port
+        CidrIp: 0.0.0.0/0
+        FromPort: 7777
+        ToPort: 7777
+        IpProtocol: udp
 
   TaskDefinition:
     Type: AWS::CloudFormation::Stack
@@ -100,6 +105,8 @@ Resources:
         DeploymentBucket: !Ref DeploymentBucket
         release: !Ref release
         LambdaRole: !GetAtt IAM.Outputs.LambdaRole
-        EcsCluster: !GetAtt EcsCluster.Outputs.Cluster
+        EcsCluster: !Ref FargateCluster
         TaskDefinition: !GetAtt TaskDefinition.Outputs.TaskFamily
         ServerlistTable: !GetAtt Persistence.Outputs.ServerlistTable
+        VpcId: !Ref VpcId
+        TaskSecurityGroupId: !GetAtt TaskSecurityGroup.GroupId

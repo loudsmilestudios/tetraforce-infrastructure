@@ -37,6 +37,10 @@ Resources:
     Properties:
       ExecutionRoleArn: !Ref TaskExecutionRole
       Family: !Sub "TetraForce-${environment}"
+      Cpu: 256
+      Memory: 512
+      RequiresCompatibilities: [ FARGATE ]
+      NetworkMode: awsvpc
       ContainerDefinitions:
       - Name: game_server
         Essential: 'true'
@@ -45,16 +49,15 @@ Resources:
           CredentialsParameter: !Ref DockerRepoSecret
         MemoryReservation: 100
         PortMappings:
-        - HostPort: 0
+        - HostPort: 7777
           ContainerPort: 7777
           Protocol: udp
         LogConfiguration:
           LogDriver: awslogs
           Options:
-            awslogs-region:
-              Ref: AWS::Region
-            awslogs-group:
-              Ref: LogGroup
+            awslogs-region: !Ref AWS::Region
+            awslogs-group: !Ref LogGroup
+            awslogs-stream-prefix: "TetraForce"
 Outputs:
   TaskArn:
     Description: ARN of the TaskDefinition

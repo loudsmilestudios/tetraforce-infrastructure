@@ -24,6 +24,12 @@ Parameters:
   ServerlistTable:
     Description: Name of the serverlist dynamodb table
     Type: String
+  VpcId:
+    Description: ID of the VPC to deploy server tasks into
+    Type: String
+  TaskSecurityGroupId:
+    Description: ID of the security group for running tasks
+    Type: String
 
 Resources:
 
@@ -109,6 +115,8 @@ Resources:
           CLUSTER: !Ref EcsCluster
           TASK_DEFINITION: !Ref TaskDefinition
           SERVERLIST_TABLE: !Ref ServerlistTable
+          VPC_ID: !Ref VpcId
+          TASK_SECURITY_GROUP: !Ref TaskSecurityGroupId
   # Grant permission to API Gateway
   CreateTaskLambdaPermission:
     Type: AWS::Lambda::Permission
