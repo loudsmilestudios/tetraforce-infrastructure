@@ -60,8 +60,11 @@ Resources:
             Principal:
               Service:
                 - lambda.amazonaws.com
+                - events.amazonaws.com
             Effect: Allow
             Sid: AssumeRoleStatement
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaRole
   LambdaRolePolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -106,7 +109,7 @@ Resources:
               - iam:Describe*
             Effect: Allow
             Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/TetraForce*"
-          - Sid: ServerlistDynamodbAcces
+          - Sid: ServerlistDynamodbAccess
             Action:
               - dynamodb:Get*
               - dynamodb:Describe*
@@ -120,6 +123,20 @@ Resources:
               - dynamodb:UpdateItem
             Effect: Allow
             Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ServerlistTable}"
+          - Sid: ServerlistDynamodbAccessitems
+            Action:
+              - dynamodb:Get*
+              - dynamodb:Describe*
+              - dynamodb:List*
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:BatchGet*
+              - dynamodb:BatchWrite*
+              - dynamodb:DeleteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+            Effect: Allow
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ServerlistTable}/*"
 
 
 Outputs:
