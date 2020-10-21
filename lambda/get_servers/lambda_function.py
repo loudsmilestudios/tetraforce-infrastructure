@@ -8,8 +8,8 @@ if __name__ != "__main__":
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+ec2 = boto3.client('ec2')
 ecs = boto3.client('ecs')
-ec2 = boto3.resource('ec2')
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ.get("SERVERLIST_TABLE"))
 
@@ -89,6 +89,7 @@ def get_task_info(task_id_list):
     if len(task_id_list) == 0:
         return []
     
+
     response = ecs.describe_tasks(
         cluster=os.environ.get('CLUSTER'),
         tasks=task_id_list
@@ -107,22 +108,24 @@ def get_task_info(task_id_list):
                 if container['name'] == os.environ.get('CONTAINER_NAME', 'game_server'):
 
                     # Create object to repersent task info
-                    server = {"lobby" : container['taskArn']}
+                    server = {"lobby" : container['taskArn'], "port" : os.environ.get('SERVER_PORT', 7777)}
 
                     # Search network bindings for connection info
-                    for binding in container['networkBindings']:
-                        # Add binding at server port
-                        if binding['containerPort'] == os.environ.get('SERVER_PORT', 7777):
-                            server['port'] = binding['hostPort']
-                            server['ip'] = get_container_instance_ip(task['containerInstanceArn'])
-                            break
-
+                    interfaces = ec2.describe_network_interfaces(
+                            Filters=[
+                                {
+                                    "Name": "addresses.private-ip-address",
+                                    "Values": [
+                                        container["networkInterfaces"][0]["privateIpv4Address"],
+                                    ]
+                                },
+                            ]
+                        )
                     
-
-                    # Add task to list once it's found port info
-                    if 'port' in server and 'ip' in server:
+                    # If container has attached network interface
+                    if len(interfaces["NetworkInterfaces"]) > 0:
+                        server["ip"] = interfaces["NetworkInterfaces"][0]["Association"]["PublicIp"]
                         tasks_info.append(server)
-                        break
 
     return tasks_info
 
@@ -160,17 +163,6 @@ def get_tasks(page=0):
         current_page = current_page + 1
 
     return tasks
-
-def get_container_instance_ip(container_instance):
-    response = ecs.describe_container_instances(
-        cluster=os.environ.get('CLUSTER'),
-        containerInstances=[container_instance]
-    )
-    if 'containerInstances' in response and len(response['containerInstances']) > 0:
-        instance = ec2.Instance(response['containerInstances'][0]['ec2InstanceId'])
-        return instance.public_ip_address
-    
-    raise "Container instance not found!"
 
 # CLI for testing lambda
 if __name__ == '__main__':
