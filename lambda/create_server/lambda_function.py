@@ -14,6 +14,9 @@ ecs = boto3.client('ecs')
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ.get("SERVERLIST_TABLE"))
 
+ec2 = boto3.resource('ec2')
+vpc = ec2.Vpc(os.environ.get("VPC_ID"))
+
 def lambda_handler(event, context):
     
     server_name = ""
@@ -32,12 +35,28 @@ def lambda_handler(event, context):
     
     # Attempt to start ECS task
     try:
+        subnet_list = []
+        for subnet in vpc.subnets.all():
+            if subnet.map_public_ip_on_launch:
+                subnet_list.append(subnet.subnet_id)
+
         response = ecs.run_task(
             cluster=os.environ.get("CLUSTER"),
             taskDefinition=os.environ.get("TASK_DEFINITION"),
-            startedBy="Public Api Endpoint"
+            startedBy="Public Api Endpoint",
+            launchType="FARGATE",
+            networkConfiguration={
+                "awsvpcConfiguration": {
+                    "subnets": subnet_list,
+                    'securityGroups': [
+                        os.environ.get("TASK_SECURITY_GROUP"),
+                    ],
+                    "assignPublicIp": "ENABLED"
+                }
+            },
         )
     except ecs.exceptions.InvalidParameterException as e:
+        logger.error(str(e))
         return build_response("This environment has no running cloud servers to run on!", False)
     
     # Check for failures
