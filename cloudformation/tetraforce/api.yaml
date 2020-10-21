@@ -217,3 +217,10 @@ Resources:
       Targets:
         - Arn: !GetAtt OnTaskStopLambda.Arn
           Id: "OnTaskStopLambda"
+  OnTaskStopPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt OnTaskStopRule.Arn
+      FunctionName: !GetAtt OnTaskStopLambda.Arn
