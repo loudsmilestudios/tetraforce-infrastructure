@@ -16,7 +16,7 @@ Parameters:
     AllowedValues: ['develop', 'stage', 'production']
     ConstraintDescription: "Must be a possible release version."
   DeploymentBucket:
-    Default: tetraforce-deployment-bucket
+    Default: tetraforce-deployment-bucket-us-east-2
     Description: S3 Bucket used in CloudFormation deployment
     Type: String
   AsgDesiredCapacity:
