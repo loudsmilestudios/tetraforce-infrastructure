@@ -74,7 +74,7 @@ Resources:
         CidrIp: 0.0.0.0/0
         FromPort: 7777
         ToPort: 7777
-        IpProtocol: udp
+        IpProtocol: tcp
 
   TaskDefinition:
     Type: AWS::CloudFormation::Stack
