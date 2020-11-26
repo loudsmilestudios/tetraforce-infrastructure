@@ -60,7 +60,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: lambda_function.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Code:
         S3Bucket: !Ref DeploymentBucket
         S3Key: !Sub "${release}/lambda/get_servers.zip"
@@ -105,7 +105,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: lambda_function.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Code:
         S3Bucket: !Ref DeploymentBucket
         S3Key: !Sub "${release}/lambda/create_server.zip"
@@ -154,7 +154,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: lambda_function.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Code:
         S3Bucket: !Ref DeploymentBucket
         S3Key: !Sub "${release}/lambda/stop_server.zip"
@@ -199,7 +199,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: lambda_function.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Code:
         S3Bucket: !Ref DeploymentBucket
         S3Key: !Sub "${release}/lambda/on_server_stop.zip"
