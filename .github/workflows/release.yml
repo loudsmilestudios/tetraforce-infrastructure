@@ -67,7 +67,7 @@ jobs:
         name: tetraforce-prod
         template: cloudformation/tetraforce/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
-        parameter-overrides: VpcId=${{ secrets.VPC_ID }},environment=production,release=production,PublicSubnets=${{ secrets.SUBNET_IDS }},AsgDesiredCapacity=0,GitHubTokenSecret=${{ secrets.SECRET_ARN }}
+        parameter-overrides: VpcId=${{ secrets.VPC_ID }},environment=production,release=production,PublicSubnets=${{ secrets.SUBNET_IDS }},AsgDesiredCapacity=0,GitHubTokenSecret=${{ secrets.SECRET_ARN }},MaxServerCount=25
   release_buckets:
     runs-on: ubuntu-latest
     steps:
@@ -86,4 +86,4 @@ jobs:
         template: cloudformation/release_site/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
         no-fail-on-empty-changeset: "1"
-        parameter-overrides: environment=production,MaxServerCount=25
+        parameter-overrides: environment=production
