@@ -17,7 +17,7 @@ table = dynamodb.Table(os.environ.get("SERVERLIST_TABLE"))
 ec2 = boto3.resource('ec2')
 vpc = ec2.Vpc(os.environ.get("VPC_ID"))
 
-max_server_count = os.environ.get("MAX_SERVER_COUNT", 2)
+max_server_count = int(os.environ.get("MAX_SERVER_COUNT", 2))
 
 def lambda_handler(event, context):
     

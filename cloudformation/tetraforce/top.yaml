@@ -48,6 +48,14 @@ Parameters:
     Description: The AWS CloudWatch log group to output logs to.
     Default: "/ecs/tetraforce"
 
+  #------------
+  # Environment
+  #------------
+  MaxServerCount:
+    Description: Max numbers of ECS tasks that can run in the cluster
+    Type: String
+    Default: "2"
+
 Resources:
 
   IAM:
@@ -110,3 +118,4 @@ Resources:
         ServerlistTable: !GetAtt Persistence.Outputs.ServerlistTable
         VpcId: !Ref VpcId
         TaskSecurityGroupId: !GetAtt TaskSecurityGroup.GroupId
+        MaxServerCount: !Ref MaxServerCount

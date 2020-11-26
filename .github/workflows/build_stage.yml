@@ -104,4 +104,4 @@ jobs:
         template: cloudformation/release_site/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
         no-fail-on-empty-changeset: "1"
-        parameter-overrides: environment=stage
+        parameter-overrides: environment=stage,MaxServerCount=10
