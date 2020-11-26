@@ -17,6 +17,8 @@ table = dynamodb.Table(os.environ.get("SERVERLIST_TABLE"))
 ec2 = boto3.resource('ec2')
 vpc = ec2.Vpc(os.environ.get("VPC_ID"))
 
+max_server_count = int(os.environ.get("MAX_SERVER_COUNT", 2))
+
 def lambda_handler(event, context):
     
     server_name = ""
@@ -30,6 +32,10 @@ def lambda_handler(event, context):
     # Generate unique server name if not name is provided
     if server_name == "":
         server_name = generate_unique_name(table)
+
+    # Verify that only a desired amount of servers are running
+    if tasks_at_max(max_server_count):
+        return build_response("Servers are at max capacity! Please contact environment admins!", False)
     
     response = {}
     
@@ -89,6 +95,45 @@ def lambda_handler(event, context):
     else:
         logger.error(response)
         return unknown_error_response()
+
+
+def tasks_at_max(num):
+    number_of_tasks_found = 0
+
+    # Get first list of cluser state
+    ecs_response = ecs.list_tasks(
+        cluster=os.environ.get("CLUSTER"),
+        launchType="FARGATE"
+        )
+
+    # Update next token
+    next_token = None
+    if "nextToken" in ecs_response:
+        next_token = ecs_response["nextToken"]
+
+    # Get first list's number of tasks
+    if "taskArns" in ecs_response:
+        number_of_tasks_found = len(ecs_response["taskArns"])
+
+    # While there are more tasks & return tasks <= desired number of tasks
+    while next_token != None and number_of_tasks_found <= num:
+        ecs_response = ecs.list_tasks(
+            cluster=os.environ.get("CLUSTER"),
+            launchType="FARGATE",
+            nextToken=next_token
+            )
+        
+        # Update next token
+        if "nextToken" in ecs_response:
+            next_token = ecs_response["nextToken"]
+        else:
+            next_token = None
+        
+        # Update number of tasks
+        if "taskArns" in ecs_response:
+            number_of_tasks_found = number_of_tasks_found + len(ecs_response["taskArns"])
+
+    return number_of_tasks_found >= num
 
 def unknown_error_response():
     return build_response("An unknown error occured!", False)

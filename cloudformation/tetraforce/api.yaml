@@ -30,6 +30,10 @@ Parameters:
   TaskSecurityGroupId:
     Description: ID of the security group for running tasks
     Type: String
+  MaxServerCount:
+    Description: Max numbers of ECS tasks that can run in the cluster
+    Type: String
+    Default: "2"
 
 Resources:
 
@@ -117,6 +121,7 @@ Resources:
           SERVERLIST_TABLE: !Ref ServerlistTable
           VPC_ID: !Ref VpcId
           TASK_SECURITY_GROUP: !Ref TaskSecurityGroupId
+          MAX_SERVER_COUNT: !Ref MaxServerCount
   # Grant permission to API Gateway
   CreateTaskLambdaPermission:
     Type: AWS::Lambda::Permission
