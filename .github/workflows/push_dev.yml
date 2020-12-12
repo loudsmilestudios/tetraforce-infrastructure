@@ -67,7 +67,7 @@ jobs:
         name: tetraforce-dev-${{ github.actor }}
         template: cloudformation/tetraforce/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
-        parameter-overrides: DeploymentBucket=tetraforce-dev-deployment-bucket-us-east-2,VpcId=${{ secrets.DEV_VPC_ID }},environment=${{ github.actor }},release=develop,PublicSubnets=${{ secrets.DEV_SUBNET_IDS }},AsgDesiredCapacity=0,GitHubTokenSecret=${{ secrets.SECRET_ARN }}
+        parameter-overrides: DeploymentBucket=tetraforce-dev-deployment-bucket-us-east-2,VpcId=${{ secrets.DEV_VPC_ID }},environment=${{ github.actor }},release=develop,PublicSubnets=${{ secrets.DEV_SUBNET_IDS }},AsgDesiredCapacity=0,GitHubTokenSecret=${{ secrets.DEV_SECRET_ARN }}
   release_buckets:
     runs-on: ubuntu-latest
     steps:
