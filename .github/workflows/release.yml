@@ -67,7 +67,7 @@ jobs:
         name: tetraforce-prod
         template: cloudformation/tetraforce/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
-        parameter-overrides: DeploymentBucket=tetraforce-prod-deployment-bucket-us-east-2,VpcId=${{ secrets.PROD_VPC_ID }},environment=production,release=production,PublicSubnets=${{ secrets.PROD_SUBNET_IDS }},AsgDesiredCapacity=0,GitHubTokenSecret=${{ secrets.SECRET_ARN }},MaxServerCount=25
+        parameter-overrides: DeploymentBucket=tetraforce-prod-deployment-bucket-us-east-2,VpcId=${{ secrets.PROD_VPC_ID }},environment=production,release=production,PublicSubnets=${{ secrets.PROD_SUBNET_IDS }},AsgDesiredCapacity=0,GitHubTokenSecret=${{ secrets.PROD_SECRET_ARN }},MaxServerCount=25
   release_buckets:
     runs-on: ubuntu-latest
     steps:
