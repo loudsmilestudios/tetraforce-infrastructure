@@ -23,8 +23,8 @@ jobs:
         AWS_REGION: "us-east-2"
         DEST_DIR: develop/cloudformation
         AWS_S3_BUCKET: tetraforce-deployment-bucket-us-east-2
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
@@ -53,13 +53,13 @@ jobs:
         AWS_REGION: "us-east-2"
         DEST_DIR: develop/lambda
         AWS_S3_BUCKET: tetraforce-deployment-bucket-us-east-2
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-2
     - name: Deploy to AWS CloudFormation
       uses: aws-actions/aws-cloudformation-github-deploy@v1
@@ -67,7 +67,7 @@ jobs:
         name: tetraforce-dev-${{ github.actor }}
         template: cloudformation/tetraforce/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
-        parameter-overrides: VpcId=${{ secrets.VPC_ID }},environment=${{ github.actor }},release=develop,PublicSubnets=${{ secrets.SUBNET_IDS }},AsgDesiredCapacity=0,GitHubTokenSecret=${{ secrets.SECRET_ARN }}
+        parameter-overrides: VpcId=${{ secrets.DEV_VPC_ID }},environment=${{ github.actor }},release=develop,PublicSubnets=${{ secrets.DEV_SUBNET_IDS }},AsgDesiredCapacity=0,GitHubTokenSecret=${{ secrets.SECRET_ARN }}
   release_buckets:
     runs-on: ubuntu-latest
     steps:
@@ -76,8 +76,8 @@ jobs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-2
     - name: Deploy to AWS CloudFormation
       uses: aws-actions/aws-cloudformation-github-deploy@v1
