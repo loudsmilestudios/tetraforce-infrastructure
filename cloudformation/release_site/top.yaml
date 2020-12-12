@@ -11,7 +11,7 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       AccessControl: PublicRead
-      BucketName: !Sub "tetraforce-public-releases-${environment}-${AWS::Region}"
+      BucketName: !Sub "tetraforce-public-${environment}-${AWS::Region}"
       Tags:
         - Key: environment
           Value: !Ref environment
