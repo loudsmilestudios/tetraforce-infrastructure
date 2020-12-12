@@ -52,7 +52,7 @@ jobs:
         SOURCE_DIR: lambda
         AWS_REGION: "us-east-2"
         DEST_DIR: stage/lambda
-        AWS_S3_BUCKET: tetraforce-deployment-bucket-us-east-2
+        AWS_S3_BUCKET: tetraforce-stage-deployment-bucket-us-east-2
         AWS_ACCESS_KEY_ID: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGE_AWS_SECRET_ACCESS_KEY }}
     - name: Configure AWS Credentials
