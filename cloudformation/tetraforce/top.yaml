@@ -77,6 +77,7 @@ Resources:
     Properties:
       GroupName: !Sub "TetraForce-${environment}-task"
       GroupDescription: Opens port 7777 to world!
+      VpcId: !Ref VpcId
       SecurityGroupIngress:
       - Description: Opens game server port
         CidrIp: 0.0.0.0/0
