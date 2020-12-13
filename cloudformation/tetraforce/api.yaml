@@ -69,16 +69,12 @@ Resources:
         - email
       UsernameConfiguration: 
         CaseSensitive: False
-      MfaConfiguration: OPTIONAL
       Schema:
         - Name: email
-          Required: True
-        - Name: preferred_username
           Required: True
         - AttributeDataType: String
           DeveloperOnlyAttribute: True
           Mutable: True
-          Required: True
           Name: skin
           
       UserPoolName: !Sub "TetraForce-${environment}"
@@ -87,15 +83,6 @@ Resources:
     Type: AWS::Cognito::UserPoolClient
     Properties:
       ClientName: !Sub "api-auth-client-${environment}"
-      AllowedOAuthFlows: 
-        - code
-      AllowedOAuthFlowsUserPoolClient: "true"
-      AllowedOAuthScopes: 
-        - email
-        - profile
-        - phone
-        - openid
-        - aws.cognito.signin.user.admin
       ExplicitAuthFlows:
         - ALLOW_ADMIN_USER_PASSWORD_AUTH
         - ALLOW_USER_PASSWORD_AUTH
