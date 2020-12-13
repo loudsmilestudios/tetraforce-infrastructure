@@ -69,6 +69,8 @@ Resources:
         - email
       UsernameConfiguration: 
         CaseSensitive: False
+      LambdaConfig:
+        CustomMessage: !GetAtt AuthMessageManagerLambda.Arn
       Schema:
         - Name: email
           Required: True
@@ -76,8 +78,32 @@ Resources:
           DeveloperOnlyAttribute: True
           Mutable: True
           Name: skin
-          
       UserPoolName: !Sub "TetraForce-${environment}"
+  
+  # Lambda to customize Cognito messages
+  AuthMessageManagerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/auth_message_manager.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-AuthMessageManager-${environment}"
+      Description: Lambda that customizes emails sent by Cognito
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref environment
+  AuthCustomMessageManagerLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt ApiUserpool.Arn
+      FunctionName: !GetAtt AuthMessageManagerLambda.Arn
   # Create authorizer client to interact with API
   ApiUserClient:
     Type: AWS::Cognito::UserPoolClient
