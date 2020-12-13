@@ -331,3 +331,48 @@ Resources:
       ApiId: !Ref HttpApi
       RouteKey: "POST /auth/register"
       Target: !Sub "integrations/${RegisterIntegration}"
+
+  # ==========
+  # AUTH Login
+  # ==========
+  LoginLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/login.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-Login-${environment}"
+      Description: Lambda that authenticates Cognito users
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          COGNITO_CLIENT: !Ref ApiUserClient
+          COGNITO_USERPOOL: !Ref ApiUserpool
+  # Grant permission to API Gateway
+  LoginLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/*"
+      FunctionName: !GetAtt LoginLambda.Arn
+  # Create API Integration
+  LoginIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties: 
+      ApiId: !Ref HttpApi
+      Description: !Sub "Integration for Login Lambda ${environment} for environment"
+      IntegrationType: AWS_PROXY
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !GetAtt LoginLambda.Arn
+  # Create Api Route
+  LoginRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties: 
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /auth/login"
+      Target: !Sub "integrations/${LoginIntegration}"
