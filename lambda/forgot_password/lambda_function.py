@@ -32,13 +32,16 @@ def lambda_handler(event, context):
             return build_response("Request missing header! #100", False)
 
 
-        # Attempt to create user
-        return login_user(params["username"], origin)
+        if "password" in params and "reset_code" in params:
+            return confirm_forgot(params["username"], params["password"], params["code"], origin)
+        else:
+            # Attempt to create user
+            return send_forgot_email(params["username"], origin)
             
 
     return unknown_error_response()
 
-def login_user(username, ip_address):
+def send_forgot_email(username, ip_address):
     try:
         COGNITO_CLIENT_ID = os.environ.get("COGNITO_CLIENT")
 
@@ -50,6 +53,24 @@ def login_user(username, ip_address):
             Username=username,
         )
         return build_response("Check your email!", True)
+    except Exception as e:
+        return build_response(str(e), False)
+
+
+def confirm_forgot(username, password, code, ip_address):
+    try:
+        COGNITO_CLIENT_ID = os.environ.get("COGNITO_CLIENT")
+
+        loginResponse = cognito.confirm_forgot_password(
+            ClientId=COGNITO_CLIENT_ID,
+            UserContextData={
+                'EncodedData': ip_address
+            },
+            Username=username,
+            ConfirmationCode=code,
+            Password=password
+        )
+        return build_response("Password reset success!", True)
     except Exception as e:
         return build_response(str(e), False)
 
