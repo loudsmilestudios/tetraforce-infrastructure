@@ -52,6 +52,90 @@ Resources:
       AutoDeploy: 'true'
       StageName: "$default"
 
+  # =============
+  # AUTHORIZATION
+  # =============
+  ApiUserpool:
+    Type: AWS::Cognito::UserPool
+    Properties: 
+      AccountRecoverySetting: 
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      AliasAttributes: 
+        - preferred_username
+        - email
+      AutoVerifiedAttributes: 
+        - email
+      UsernameConfiguration: 
+        CaseSensitive: False
+      LambdaConfig:
+        CustomMessage: !GetAtt AuthMessageManagerLambda.Arn
+      Schema:
+        - Name: email
+          Required: True
+        - AttributeDataType: String
+          DeveloperOnlyAttribute: True
+          Mutable: True
+          Name: skin
+      UserPoolName: !Sub "TetraForce-${environment}"
+  
+  # Lambda to customize Cognito messages
+  AuthMessageManagerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/auth_message_manager.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-AuthMessageManager-${environment}"
+      Description: Lambda that customizes emails sent by Cognito
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref environment
+  AuthCustomMessageManagerLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt ApiUserpool.Arn
+      FunctionName: !GetAtt AuthMessageManagerLambda.Arn
+  # Create authorizer client to interact with API
+  ApiUserClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "api-auth-client-${environment}"
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: "false"
+      SupportedIdentityProviders: 
+        - COGNITO
+      UserPoolId: !Ref ApiUserpool
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties: 
+      Domain: !Sub "tetraforce-auth-${environment}"
+      UserPoolId: !Ref ApiUserpool
+  # Create authorizer resource in API
+  ApiAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties: 
+      ApiId: !Ref HttpApi
+      AuthorizerType: JWT
+      IdentitySource: 
+        - $request.header.Authorization
+      JwtConfiguration: 
+        Audience:
+          - !Ref ApiUserClient
+        Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${ApiUserpool}"
+      Name: cognito-authorizer
 
   # =========
   # GET TASKS
@@ -229,3 +313,179 @@ Resources:
       Principal: events.amazonaws.com
       SourceArn: !GetAtt OnTaskStopRule.Arn
       FunctionName: !GetAtt OnTaskStopLambda.Arn
+
+  # ==============
+  # AUTH REGISTER
+  # ==============
+  RegisterLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/register.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-Register-${environment}"
+      Description: Lambda that creates Cognito users
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          COGNITO_CLIENT: !Ref ApiUserClient
+  # Grant permission to API Gateway
+  RegisterLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/*"
+      FunctionName: !GetAtt RegisterLambda.Arn
+  # Create API Integration
+  RegisterIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties: 
+      ApiId: !Ref HttpApi
+      Description: !Sub "Integration for Register Lambda ${environment} for environment"
+      IntegrationType: AWS_PROXY
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !GetAtt RegisterLambda.Arn
+  # Create Api Route
+  RegisterRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties: 
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /auth/register"
+      Target: !Sub "integrations/${RegisterIntegration}"
+
+  # ==========
+  # AUTH Login
+  # ==========
+  LoginLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/login.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-Login-${environment}"
+      Description: Lambda that authenticates Cognito users
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          COGNITO_CLIENT: !Ref ApiUserClient
+          COGNITO_USERPOOL: !Ref ApiUserpool
+  # Grant permission to API Gateway
+  LoginLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/*"
+      FunctionName: !GetAtt LoginLambda.Arn
+  # Create API Integration
+  LoginIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties: 
+      ApiId: !Ref HttpApi
+      Description: !Sub "Integration for Login Lambda ${environment} for environment"
+      IntegrationType: AWS_PROXY
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !GetAtt LoginLambda.Arn
+  # Create Api Route
+  LoginRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties: 
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /auth/login"
+      Target: !Sub "integrations/${LoginIntegration}"
+
+  # ==========
+  # AUTH Reset
+  # ==========
+  AuthResetLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/forgot_password.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-AuthReset-${environment}"
+      Description: Lambda that resets a user's password
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          COGNITO_CLIENT: !Ref ApiUserClient
+  # Grant permission to API Gateway
+  AuthResetLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/*"
+      FunctionName: !GetAtt AuthResetLambda.Arn
+  # Create API Integration
+  AuthResetIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties: 
+      ApiId: !Ref HttpApi
+      Description: !Sub "Integration for reset Lambda ${environment} for environment"
+      IntegrationType: AWS_PROXY
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !GetAtt AuthResetLambda.Arn
+  # Create Api Route
+  AuthResetRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties: 
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /auth/reset"
+      Target: !Sub "integrations/${AuthResetIntegration}"
+
+  # =============
+  # AUTH Profile
+  # =============
+  AuthProfileLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Sub "${release}/lambda/get_profile.zip"
+      Role: !Ref LambdaRole
+      FunctionName: !Sub "TetraForce-Api-AuthProfile-${environment}"
+      Description: Lambda that returns basic data about a user
+      MemorySize: 128
+      Timeout: 10
+  # Grant permission to API Gateway
+  AuthProfileLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/*"
+      FunctionName: !GetAtt AuthProfileLambda.Arn
+  # Create API Integration
+  AuthProfileIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties: 
+      ApiId: !Ref HttpApi
+      Description: !Sub "Integration for Profile Lambda ${environment} for environment"
+      IntegrationType: AWS_PROXY
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !GetAtt AuthProfileLambda.Arn
+  # Create Api Route
+  AuthProfileRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      AuthorizationType: JWT
+      AuthorizerId: !Ref ApiAuthorizer
+      ApiId: !Ref HttpApi
+      RouteKey: "GET /auth/profile"
+      Target: !Sub "integrations/${AuthProfileIntegration}"
