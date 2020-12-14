@@ -53,7 +53,10 @@ def login_user(username, password, ip_address):
                 "PASSWORD" : password
             }
         )
-        return build_response({"AuthenticationResult" : loginResponse["AuthenticationResult"]}, True)
+        response = loginResponse["AuthenticationResult"]
+        response["success"] = True
+        response["message"] = "Successfully authenticated!"
+        return response
     except Exception as e:
         return build_response(str(e), False)
 
