@@ -33,7 +33,7 @@ def lambda_handler(event, context):
 
 
         if "password" in params and "reset_code" in params:
-            return confirm_forgot(params["username"], params["password"], params["code"], origin)
+            return confirm_forgot(params["username"], params["password"], params["reset_code"], origin)
         else:
             # Attempt to create user
             return send_forgot_email(params["username"], origin)
