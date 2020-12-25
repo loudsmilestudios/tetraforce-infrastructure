@@ -15,14 +15,14 @@ def lambda_handler(event, context):
         event["response"] = {
                 "smsMessage" : f"Hi there!\nIt's the TetraForce team.\n\nClick here to reset your password: {reset_link}",
                 "emailSubject" : "Forgot your password? | TetraForce",
-                "emailMessage" : load_email_template("verify_email.html", reset_link)
+                "emailMessage" : f"<a href=\"{reset_link}\">Click here to reset your password</a>"
             }
     elif event["triggerSource"] == "CustomMessage_SignUp":
         confirm_link = event["request"]["linkParameter"]
         event["response"] = {
             "smsMessage" : f"Hi there!\nWelcome to TetraForce!\n\nClick here to confirm your device: {confirm_link}",
             "emailSubject" : "Confirm Email | TetraForce",
-            "emailMessage" : f"<a href=\"{confirm_link}\">Click here to confirm your email</a>"
+            "emailMessage" : load_email_template("verify_email.html", confirm_link)
         }
     
     return event
@@ -36,4 +36,4 @@ def load_email_template(template_name, link):
     
     email_body.replace("##", link)
 
-    return str(email_body)
+    return email_body
