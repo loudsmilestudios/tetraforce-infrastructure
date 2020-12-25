@@ -15,7 +15,7 @@ def lambda_handler(event, context):
         event["response"] = {
                 "smsMessage" : f"Hi there!\nIt's the TetraForce team.\n\nClick here to reset your password: {reset_link}",
                 "emailSubject" : "Forgot your password? | TetraForce",
-                "emailMessage" : f"<a href=\"{reset_link}\">Click here to reset your password</a>"
+                "emailMessage" : load_email_template("verify_email.html", reset_link)
             }
     elif event["triggerSource"] == "CustomMessage_SignUp":
         confirm_link = event["request"]["linkParameter"]
@@ -26,3 +26,14 @@ def lambda_handler(event, context):
         }
     
     return event
+
+def load_email_template(template_name, link):
+    
+    email_body = ""
+    
+    with open(f"email_templates/{template_name}", "r") as template:
+        email_body=template.read()
+    
+    email_body.replace("##", link)
+
+    return str(email_body)
