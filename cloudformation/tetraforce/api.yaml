@@ -34,6 +34,17 @@ Parameters:
     Description: Max numbers of ECS tasks that can run in the cluster
     Type: String
     Default: "2"
+  SesEmail:
+    Description: Email address used when sending emails via Cognito, leave empty for managed by Cognito
+    Type: String
+    Default: ""
+  SesEmailArn:
+    Description: Email address ARN used when sending emails via Cognito, leave empty for managed by Cognito
+    Type: String
+    Default: ""
+
+Conditions:
+  EnableSNS: !Not [ !Equals [!Ref SesEmailArn, ""]]
 
 Resources:
 
@@ -69,6 +80,13 @@ Resources:
         - email
       UsernameConfiguration: 
         CaseSensitive: False
+      EmailConfiguration: !If
+                          - EnableSNS
+                          - EmailSendingAccount: DEVELOPER
+                            From: !Ref SesEmail
+                            ReplyToEmailAddress: !Ref SesEmail
+                            SourceArn: !Ref SesEmailArn
+                          - EmailSendingAccount: COGNITO_DEFAULT
       LambdaConfig:
         CustomMessage: !GetAtt AuthMessageManagerLambda.Arn
       Schema:

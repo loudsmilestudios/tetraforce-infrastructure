@@ -40,6 +40,18 @@ Parameters:
     Description: The public subnets for the ALB to run in. (Space seperated)
     Type: String
 
+  #-------
+  # Email
+  #-------
+  SesEmail:
+    Description: Email address used when sending emails via Cognito, leave empty for managed by Cognito
+    Type: String
+    Default: ""
+  SesEmailArn:
+    Description: Email address ARN used when sending emails via Cognito, leave empty for managed by Cognito
+    Type: String
+    Default: ""
+
   #------------
   # CloudWatch
   #------------
@@ -120,3 +132,5 @@ Resources:
         VpcId: !Ref VpcId
         TaskSecurityGroupId: !GetAtt TaskSecurityGroup.GroupId
         MaxServerCount: !Ref MaxServerCount
+        SesEmail: !Ref SesEmail
+        SesEmailArn: !Ref SesEmail
