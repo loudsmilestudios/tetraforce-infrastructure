@@ -35,10 +35,8 @@ Parameters:
   #------------
   VpcId:
     Description: ID of the VPC
-    Type: AWS::EC2::VPC::Id
-  PublicSubnets:
-    Description: The public subnets for the ALB to run in. (Space seperated)
-    Type: String
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/network/us-east-2/vpc/id"
 
   #-------
   # Email

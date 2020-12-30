@@ -1,0 +1,151 @@
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties: 
+      CidrBlock: "10.0.0.0/16"
+      Tags: 
+        - Key: Name
+          Value: TetraForce-Network
+
+  # ==============
+  # Public Subnets
+  # ==============
+  PublicSubnetAz1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-2a
+      CidrBlock: 10.0.0.0/19
+      MapPublicIpOnLaunch: true
+      Tags: 
+        - Key: Name
+          Value: TetraForce-Network-Public-A
+      VpcId: !Ref Vpc
+
+  PublicSubnetAz2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-2b
+      CidrBlock: 10.0.32.0/19
+      MapPublicIpOnLaunch: true
+      Tags: 
+        - Key: Name
+          Value: TetraForce-Network-Public-B
+      VpcId: !Ref Vpc
+
+  PublicSubnetAz3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-2c
+      CidrBlock: 10.0.64.0/19
+      MapPublicIpOnLaunch: true
+      Tags: 
+        - Key: Name
+          Value: TetraForce-Network-Public-C
+      VpcId: !Ref Vpc
+
+
+  # ================
+  # Internet Gateway
+  # ================
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  
+  GatewayToInternet:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  # ==============
+  # Public Routing
+  # ==============
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+  
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayToInternet
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetAz1
+      RouteTableId: !Ref PublicRouteTable
+  
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetAz2
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetAz2
+      RouteTableId: !Ref PublicRouteTable
+
+
+  # ===========
+  # SSM Outputs
+  # ===========
+  VpcParameter:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Description: ID of simple VPC
+      Name: !Sub "/network/${AWS::Region}/vpc/id"
+      Type: String
+      Value: !Ref Vpc
+
+  VpcPublicSubnetsParameter:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Description: Subnets accessible publicly on the internet
+      Name: !Sub "/network/${AWS::Region}/vpc/subnets/public/ids"
+      Type: String
+      Value: !Sub "${PublicSubnetAz1},${PublicSubnetAz2},${PublicSubnetAz3}"
+
+  VpcPrivateSubnetsParameter:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Description: Subnets that are not accessible on the internet
+      Name: !Sub "/network/${AWS::Region}/vpc/subnets/private/ids"
+      Type: String
+      Value: "None"
+
+  VpcSubnetsParameter:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Description: All subnets associated with VPC
+      Name: !Sub "/network/${AWS::Region}/vpc/subnets/ids"
+      Type: String
+      Value: !Sub "${PublicSubnetAz1},${PublicSubnetAz2},${PublicSubnetAz3}"
+
+# Cloudformation outputs
+Outputs:
+  Vpc:
+    Description: ID of newly created VPC
+    Value: !GetAtt VpcParameter.Value
+    Export:
+      Name: !Sub "${AWS::StackName}:VPC"
+  PublicSubnets:
+    Description: Subnets accessible publicly on the internet
+    Value: !GetAtt VpcPublicSubnetsParameter.Value
+    Export:
+      Name: !Sub "${AWS::StackName}:PublicSubnets"
+  PrivateSubnets:
+    Description: Subnets that are not accessible on the internet
+    Value: !GetAtt VpcPrivateSubnetsParameter.Value
+    Export:
+      Name: !Sub "${AWS::StackName}:PrivateSubnets"
+  Subnets:
+    Description: All subnets associated with VPC
+    Value: !GetAtt VpcSubnetsParameter.Value
+    Export:
+      Name: !Sub "${AWS::StackName}:Subnets"
