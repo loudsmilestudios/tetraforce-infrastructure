@@ -87,3 +87,21 @@ jobs:
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
         no-fail-on-empty-changeset: "1"
         parameter-overrides: environment=production
+  deploy_network:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2.1.0
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
+    - name: Deploy to AWS CloudFormation
+      uses: aws-actions/aws-cloudformation-github-deploy@v1
+      with:
+        name: tetraforce-network
+        template: cloudformation/release_site/top.yaml
+        capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
+        no-fail-on-empty-changeset: "1"
