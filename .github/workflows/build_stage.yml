@@ -68,7 +68,7 @@ jobs:
         name: tetraforce-stage
         template: cloudformation/tetraforce/top.yaml
         capabilities: "CAPABILITY_NAMED_IAM,CAPABILITY_IAM"
-        parameter-overrides: DeploymentBucket=tetraforce-stage-deployment-bucket-us-east-2,VpcId=${{ secrets.STAGE_VPC_ID }},DockerTag=stage,environment=stage,release=stage,PublicSubnets=${{ secrets.STAGE_SUBNET_IDS }},AsgDesiredCapacity=1,GitHubTokenSecret=${{ secrets.STAGE_SECRET_ARN }},MaxServerCount=10
+        parameter-overrides: DeploymentBucket=tetraforce-stage-deployment-bucket-us-east-2,DockerTag=stage,environment=stage,release=stage,AsgDesiredCapacity=1,GitHubTokenSecret=${{ secrets.STAGE_SECRET_ARN }},MaxServerCount=10
   #========================================================================
   # Previously managed IAM Groups deprecated by Multi-Account Architecture
   #========================================================================
