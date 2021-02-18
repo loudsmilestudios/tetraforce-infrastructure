@@ -54,6 +54,10 @@ Resources:
       Description: Backend API for managing TetraForce game servers/tasks
       Name: !Sub "TetraForce-API-${environment}"
       ProtocolType: HTTP
+      CorsConfiguration:
+        AllowHeaders: ["*"]
+        AllowMethods: ["*"]
+        AllowOrigins: ["https://game.tetraforce.io", "https://tetraforce.io", "http://tetraforce.io"]
 
 
   ApiStage:
