@@ -82,6 +82,7 @@ def replace_dynamo_with_data(dynamo_item):
     info = get_task_info([task])
     dynamo_item['ip'] = info[0]['ip']
     dynamo_item['port'] = info[0]['port']
+    dynamo_item['status'] = info[0]['status']
 
     return dynamo_item
 
@@ -100,6 +101,8 @@ def get_task_info(task_id_list):
     # Check each task for server data
     if 'tasks' in response:
         for task in response['tasks']:
+
+            task_status = task["lastStatus"]
 
             # Check containers for information
             for container in task['containers']:
@@ -125,6 +128,7 @@ def get_task_info(task_id_list):
                     # If container has attached network interface
                     if len(interfaces["NetworkInterfaces"]) > 0:
                         server["ip"] = interfaces["NetworkInterfaces"][0]["Association"]["PublicIp"]
+                        server["status"] = task_status
                         tasks_info.append(server)
 
     return tasks_info
