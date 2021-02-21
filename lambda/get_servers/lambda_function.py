@@ -101,6 +101,8 @@ def get_task_info(task_id_list):
     if 'tasks' in response:
         for task in response['tasks']:
 
+            task_status = task["lastStatus"]
+
             # Check containers for information
             for container in task['containers']:
 
@@ -125,10 +127,8 @@ def get_task_info(task_id_list):
                     # If container has attached network interface
                     if len(interfaces["NetworkInterfaces"]) > 0:
                         server["ip"] = interfaces["NetworkInterfaces"][0]["Association"]["PublicIp"]
+                        server["status"] = task_status
                         tasks_info.append(server)
-            
-            # Check task status
-            task_info["status"] = task["lastStatus"]
 
     return tasks_info
 
