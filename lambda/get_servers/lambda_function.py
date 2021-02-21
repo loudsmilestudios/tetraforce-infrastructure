@@ -126,6 +126,9 @@ def get_task_info(task_id_list):
                     if len(interfaces["NetworkInterfaces"]) > 0:
                         server["ip"] = interfaces["NetworkInterfaces"][0]["Association"]["PublicIp"]
                         tasks_info.append(server)
+            
+            # Check task status
+            task_info["status"] = task["lastStatus"]
 
     return tasks_info
 
