@@ -82,6 +82,7 @@ def replace_dynamo_with_data(dynamo_item):
     info = get_task_info([task])
     dynamo_item['ip'] = info[0]['ip']
     dynamo_item['port'] = info[0]['port']
+    dynamo_item['status'] = info[0]['status']
 
     return dynamo_item
 
